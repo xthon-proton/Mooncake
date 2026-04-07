@@ -90,50 +90,130 @@ if [ "$SKIP_CONFIRM" = false ]; then
 fi
 
 
-# Update package lists
-print_section "Updating package lists"
-apt-get update
-check_success "Failed to update package lists"
-
 # Install system packages
 print_section "Installing system packages"
 echo -e "${YELLOW}This may take a few minutes...${NC}"
 
-SYSTEM_PACKAGES="build-essential \
-                  cmake \
-                  ninja-build \
-                  git \
-                  wget \
-                  unzip \
-                  libibverbs-dev \
-                  libgoogle-glog-dev \
-                  libgtest-dev \
-                  libjsoncpp-dev \
-                  libunwind-dev \
-                  libnuma-dev \
-                  libpython3-dev \
-                  libboost-all-dev \
-                  libssl-dev \
-                  libgrpc-dev \
-                  libgrpc++-dev \
-                  libprotobuf-dev \
-                  libyaml-cpp-dev \
-                  protobuf-compiler-grpc \
-                  libcurl4-openssl-dev \
-                  libhiredis-dev \
-                  liburing-dev \
-                  libjemalloc-dev \
-                  libmsgpack-dev \
-                  libzstd-dev \
-                  libasio-dev \
-                  libxxhash-dev \
-                  pkg-config \
-                  patchelf \
-                  libc6-dev \
-                  libc-bin"
+if command -v apt-get &> /dev/null; then
+    echo "Detected apt-get. Using Debian-based package manager."
 
-apt-get install -y $SYSTEM_PACKAGES
-check_success "Failed to install system packages"
+    apt-get update
+    check_success "Failed to update package lists"
+
+    APT_PACKAGES="build-essential \
+                      cmake \
+                      ninja-build \
+                      git \
+                      wget \
+                      unzip \
+                      libibverbs-dev \
+                      libgoogle-glog-dev \
+                      libgtest-dev \
+                      libjsoncpp-dev \
+                      libunwind-dev \
+                      libnuma-dev \
+                      libpython3-dev \
+                      libboost-all-dev \
+                      libssl-dev \
+                      libgrpc-dev \
+                      libgrpc++-dev \
+                      libprotobuf-dev \
+                      libyaml-cpp-dev \
+                      protobuf-compiler-grpc \
+                      libcurl4-openssl-dev \
+                      libhiredis-dev \
+                      liburing-dev \
+                      libjemalloc-dev \
+                      libmsgpack-dev \
+                      libzstd-dev \
+                      libasio-dev \
+                      libxxhash-dev \
+                      pkg-config \
+                      patchelf \
+                      libc6-dev \
+                      libc-bin"
+
+    apt-get install -y $APT_PACKAGES
+    check_success "Failed to install system packages"
+
+elif command -v yum &> /dev/null; then
+    echo "Detected yum. Using Red Hat-based package manager."
+
+    yum makecache
+    check_success "Failed to update package lists"
+
+    YUM_PACKAGES="gcc \
+                      gcc-c++ \
+                      make \
+                      cmake \
+                      ninja-build \
+                      git \
+                      wget \
+                      unzip \
+                      libibverbs-devel \
+                      glog-devel \
+                      gflags-devel \
+                      gtest-devel \
+                      jsoncpp-devel \
+                      libunwind-devel \
+                      numactl-devel \
+                      python3-devel \
+                      boost-devel \
+                      openssl-devel \
+                      protobuf-devel \
+                      grpc-devel \
+                      libcurl-devel \
+                      hiredis-devel \
+                      liburing-devel \
+                      jemalloc-devel \
+                      libzstd-devel \
+                      asio-devel \
+                      xxhash-devel \
+                      pkgconfig \
+                      patchelf \
+                      glibc-devel"
+
+    yum install -y $YUM_PACKAGES
+    check_success "Failed to install system packages"
+
+    # yaml-cpp: compile from source (not always available in standard yum repos)
+    print_section "Building yaml-cpp from source"
+    YAMLCPP_BUILD_DIR=$(mktemp -d)
+    git clone --depth=1 --branch yaml-cpp-0.7.0 https://github.com/jbeder/yaml-cpp.git "${YAMLCPP_BUILD_DIR}/yaml-cpp"
+    check_success "Failed to clone yaml-cpp"
+    mkdir -p "${YAMLCPP_BUILD_DIR}/yaml-cpp/build"
+    cd "${YAMLCPP_BUILD_DIR}/yaml-cpp/build"
+    cmake .. -DYAML_BUILD_SHARED_LIBS=ON -DYAML_CPP_BUILD_TESTS=OFF
+    check_success "Failed to configure yaml-cpp"
+    cmake --build . -j$(nproc)
+    check_success "Failed to build yaml-cpp"
+    cmake --install .
+    check_success "Failed to install yaml-cpp"
+    cd "${REPO_ROOT}"
+    rm -rf "${YAMLCPP_BUILD_DIR}"
+    print_success "yaml-cpp installed successfully"
+
+    # msgpack-c: compile from source (not always available in standard yum repos)
+    print_section "Building msgpack-c from source"
+    MSGPACK_BUILD_DIR=$(mktemp -d)
+    git clone --depth=1 --branch cpp-7.0.0 https://github.com/msgpack/msgpack-c.git "${MSGPACK_BUILD_DIR}/msgpack-c"
+    check_success "Failed to clone msgpack-c"
+    mkdir -p "${MSGPACK_BUILD_DIR}/msgpack-c/build"
+    cd "${MSGPACK_BUILD_DIR}/msgpack-c/build"
+    cmake ..
+    check_success "Failed to configure msgpack-c"
+    cmake --build . -j$(nproc)
+    check_success "Failed to build msgpack-c"
+    cmake --install .
+    check_success "Failed to install msgpack-c"
+    cd "${REPO_ROOT}"
+    rm -rf "${MSGPACK_BUILD_DIR}"
+    print_success "msgpack-c installed successfully"
+
+else
+    print_error "Unsupported package manager. Please install the dependencies manually."
+fi
+
 print_success "System packages installed successfully"
 
 # Initialize and update git submodules
@@ -185,7 +265,7 @@ cd "${REPO_ROOT}"
 print_section "Verifying essential build tools"
 
 # Verify getconf and ldd (required for glibc version detection in build_wheel.sh)
-# Both are provided by libc-bin, which is included in SYSTEM_PACKAGES
+# On Debian/Ubuntu these come from libc-bin; on RHEL/EulerOS they are part of glibc.
 if ! command -v getconf >/dev/null 2>&1; then
     print_error "getconf not found after installing system packages. This should not happen."
 fi
