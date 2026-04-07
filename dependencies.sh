@@ -211,7 +211,7 @@ elif command -v yum &> /dev/null; then
     print_success "msgpack-c installed successfully"
 
 else
-    print_error "Unsupported package manager. Please install the dependencies manually."
+    print_error "Unsupported package manager. Neither apt-get nor yum was found. Please install the dependencies manually (see docs/build.md for the required packages)."
 fi
 
 print_success "System packages installed successfully"
