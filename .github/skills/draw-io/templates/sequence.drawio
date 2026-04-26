@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="Sequence Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="280" y="20" width="440" height="40" as="geometry"/>
+    </mxCell>
+
+    <!-- Actor Boxes (top) -->
+    <mxCell id="actor-client" value="Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="80" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="actor-server" value="Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="440" y="80" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="actor-db" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="800" y="80" width="120" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Lifelines -->
+    <mxCell id="ll-client" style="endArrow=none;dashed=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="140" y="130" as="sourcePoint"/>
+        <mxPoint x="140" y="650" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="ll-server" style="endArrow=none;dashed=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="500" y="130" as="sourcePoint"/>
+        <mxPoint x="500" y="650" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="ll-db" style="endArrow=none;dashed=1;strokeColor=#666666;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="860" y="130" as="sourcePoint"/>
+        <mxPoint x="860" y="650" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Activation boxes -->
+    <mxCell id="act-client-1" value="" style="fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="130" y="200" width="20" height="230" as="geometry"/>
+    </mxCell>
+    <mxCell id="act-server-1" value="" style="fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="490" y="250" width="20" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="act-db-1" value="" style="fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="850" y="290" width="20" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- Messages -->
+    <mxCell id="msg1" value="1: request(data)" style="endArrow=block;endFill=1;strokeColor=#6c8ebf;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="150" y="220" as="sourcePoint"/>
+        <mxPoint x="490" y="260" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="msg2" value="2: query(sql)" style="endArrow=block;endFill=1;strokeColor=#6c8ebf;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="510" y="300" as="sourcePoint"/>
+        <mxPoint x="850" y="300" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="msg3" value="3: results" style="endArrow=block;endFill=1;dashed=1;strokeColor=#82b366;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="850" y="340" as="sourcePoint"/>
+        <mxPoint x="510" y="340" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="msg4" value="4: response(payload)" style="endArrow=block;endFill=1;dashed=1;strokeColor=#82b366;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="490" y="370" as="sourcePoint"/>
+        <mxPoint x="150" y="410" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Actor Boxes (bottom, mirror) -->
+    <mxCell id="actor-client-bottom" value="Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="650" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="actor-server-bottom" value="Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="440" y="650" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="actor-db-bottom" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="800" y="650" width="120" height="50" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>

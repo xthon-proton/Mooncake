@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="20" width="400" height="40" as="geometry"/>
+    </mxCell>
+
+    <!-- Tier 1: Client Layer -->
+    <mxCell id="tier-client" value="Client Layer" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;startSize=30;" vertex="1" parent="1">
+      <mxGeometry x="60" y="80" width="960" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="web-client" value="Web Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="tier-client">
+      <mxGeometry x="60" y="50" width="160" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="mobile-client" value="Mobile App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="tier-client">
+      <mxGeometry x="280" y="50" width="160" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="external-api-client" value="External API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="tier-client">
+      <mxGeometry x="500" y="50" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- Tier 2: Application Layer -->
+    <mxCell id="tier-app" value="Application Layer" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;startSize=30;" vertex="1" parent="1">
+      <mxGeometry x="60" y="240" width="960" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="api-gateway" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="tier-app">
+      <mxGeometry x="60" y="50" width="160" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="service-a" value="Service A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="tier-app">
+      <mxGeometry x="280" y="50" width="160" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="service-b" value="Service B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="tier-app">
+      <mxGeometry x="500" y="50" width="160" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="cache" value="Cache" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="tier-app">
+      <mxGeometry x="720" y="50" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- Tier 3: Data Layer -->
+    <mxCell id="tier-data" value="Data Layer" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;startSize=30;" vertex="1" parent="1">
+      <mxGeometry x="60" y="400" width="960" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="primary-db" value="Primary DB" style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="tier-data">
+      <mxGeometry x="60" y="40" width="160" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="replica-db" value="Replica DB" style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="tier-data">
+      <mxGeometry x="280" y="40" width="160" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="object-store" value="Object Store" style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="tier-data">
+      <mxGeometry x="500" y="40" width="160" height="70" as="geometry"/>
+    </mxCell>
+
+    <!-- Cross-tier edges -->
+    <mxCell id="e-web-gw" edge="1" source="web-client" target="api-gateway" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-mobile-gw" edge="1" source="mobile-client" target="api-gateway" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-ext-gw" edge="1" source="external-api-client" target="api-gateway" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-gw-svcA" edge="1" source="api-gateway" target="service-a" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-gw-svcB" edge="1" source="api-gateway" target="service-b" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-svcA-cache" style="dashed=1;" edge="1" source="service-a" target="cache" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-svcA-db" edge="1" source="service-a" target="primary-db" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-svcB-db" edge="1" source="service-b" target="primary-db" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-primary-replica" style="dashed=1;" edge="1" source="primary-db" target="replica-db" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-svcB-store" edge="1" source="service-b" target="object-store" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>
