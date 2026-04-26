@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1"
+              tooltips="1" connect="1" arrows="1" fold="1" page="1"
+              pageScale="1" pageWidth="1400" pageHeight="1020" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="Mooncake on Kubernetes — Deployment Topology" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="400" y="20" width="600" height="40" as="geometry"/>
+    </mxCell>
+
+    <!-- Kubernetes Cluster outer boundary -->
+    <mxCell id="k8s-cluster" value="Kubernetes Cluster" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#326ce5;strokeWidth=2;dashed=1;verticalAlign=top;align=left;fontStyle=1;fontSize=13;fontColor=#326ce5;spacingLeft=12;spacingTop=8;" vertex="1" parent="1">
+      <mxGeometry x="40" y="70" width="1320" height="920" as="geometry"/>
+    </mxCell>
+
+    <!-- ============ Section: General Compute Nodes (etcd row) ============ -->
+    <mxCell id="lbl-gen-1" value="通算节点 (General Compute Nodes — CPU only)  ·  etcd Cluster" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=1;fontColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="80" y="110" width="600" height="30" as="geometry"/>
+    </mxCell>
+
+    <!-- General Compute Node 1 (etcd-0) -->
+    <mxCell id="gnode1" value="General Node 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="80" y="150" width="380" height="180" as="geometry"/>
+    </mxCell>
+    <mxCell id="etcd0" value="etcd-0&#10;(Pod)&#10;:2379 / :2380" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="130" y="200" width="280" height="110" as="geometry"/>
+    </mxCell>
+
+    <!-- General Compute Node 2 (etcd-1) -->
+    <mxCell id="gnode2" value="General Node 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="510" y="150" width="380" height="180" as="geometry"/>
+    </mxCell>
+    <mxCell id="etcd1" value="etcd-1&#10;(Pod)&#10;:2379 / :2380" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="560" y="200" width="280" height="110" as="geometry"/>
+    </mxCell>
+
+    <!-- General Compute Node 3 (etcd-2) -->
+    <mxCell id="gnode3" value="General Node 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="940" y="150" width="380" height="180" as="geometry"/>
+    </mxCell>
+    <mxCell id="etcd2" value="etcd-2&#10;(Pod)&#10;:2379 / :2380" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="990" y="200" width="280" height="110" as="geometry"/>
+    </mxCell>
+
+    <!-- etcd peer raft connections (between etcd pods) -->
+    <mxCell id="peer-01" style="endArrow=none;dashed=1;strokeColor=#9673a6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="etcd0" target="etcd1" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="peer-12" style="endArrow=none;dashed=1;strokeColor=#9673a6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="etcd1" target="etcd2" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="peer-02" value="raft peer (:2380)" style="endArrow=none;dashed=1;strokeColor=#9673a6;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;fontColor=#9673a6;" edge="1" source="etcd0" target="etcd2" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="270" y="170"/>
+          <mxPoint x="1130" y="170"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ============ etcd Service (ClusterIP) ============ -->
+    <mxCell id="etcd-svc" value="etcd Service (ClusterIP)&#10;etcd-svc.mooncake.svc.cluster.local : 2379" style="shape=mxgraph.kubernetes.icon;prIcon=svc;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;align=center;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="380" y="380" width="640" height="70" as="geometry"/>
+    </mxCell>
+
+    <!-- Edges: etcd pods register as Service endpoints -->
+    <mxCell id="ep-0" style="endArrow=classic;html=1;strokeColor=#d6b656;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;" edge="1" source="etcd0" target="etcd-svc" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="ep-1" value="Service endpoints" style="endArrow=classic;html=1;strokeColor=#d6b656;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;fontColor=#7a6a2a;" edge="1" source="etcd1" target="etcd-svc" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="ep-2" style="endArrow=classic;html=1;strokeColor=#d6b656;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" edge="1" source="etcd2" target="etcd-svc" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- ============ Section: General Compute Nodes (mooncake_master row) ============ -->
+    <mxCell id="lbl-gen-2" value="通算节点 (General Compute Nodes — CPU only)  ·  mooncake_master (HA, leader-elected via etcd)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=1;fontColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="80" y="480" width="900" height="30" as="geometry"/>
+    </mxCell>
+
+    <!-- General Compute Node 4 (mooncake_master Leader) -->
+    <mxCell id="gnode4" value="General Node 4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="80" y="520" width="380" height="190" as="geometry"/>
+    </mxCell>
+    <mxCell id="master-leader" value="mooncake_master  ★ LEADER&#10;(Pod)&#10;rpc_address : rpc_port&#10;--etcd-endpoints = etcd-svc:2379" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=3;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="110" y="560" width="320" height="130" as="geometry"/>
+    </mxCell>
+
+    <!-- General Compute Node 5 (mooncake_master Follower) -->
+    <mxCell id="gnode5" value="General Node 5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="510" y="520" width="380" height="190" as="geometry"/>
+    </mxCell>
+    <mxCell id="master-f1" value="mooncake_master  (Follower)&#10;(Pod)&#10;rpc_address : rpc_port&#10;--etcd-endpoints = etcd-svc:2379" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="540" y="560" width="320" height="130" as="geometry"/>
+    </mxCell>
+
+    <!-- General Compute Node 6 (mooncake_master Follower) -->
+    <mxCell id="gnode6" value="General Node 6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="940" y="520" width="380" height="190" as="geometry"/>
+    </mxCell>
+    <mxCell id="master-f2" value="mooncake_master  (Follower)&#10;(Pod)&#10;rpc_address : rpc_port&#10;--etcd-endpoints = etcd-svc:2379" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="970" y="560" width="320" height="130" as="geometry"/>
+    </mxCell>
+
+    <!-- Edges: each master ↔ etcd Service (leader election + leader rpc_address publishing) -->
+    <mxCell id="m2e-leader" value="leader election + register&#10;leader rpc_address:rpc_port" style="endArrow=classic;startArrow=classic;html=1;strokeColor=#82b366;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;fontSize=10;fontColor=#3f6f3a;align=center;" edge="1" source="master-leader" target="etcd-svc" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="m2e-f1" style="endArrow=classic;startArrow=classic;html=1;strokeColor=#6c8ebf;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" source="master-f1" target="etcd-svc" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="m2e-f2" style="endArrow=classic;startArrow=classic;html=1;strokeColor=#6c8ebf;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" edge="1" source="master-f2" target="etcd-svc" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- ============ Section: AI Compute Nodes (vllm_ascend with mooncake_client) ============ -->
+    <mxCell id="lbl-ai" value="智算节点 (AI Compute Nodes — with NPU / GPU)  ·  vllm_ascend with embedded mooncake_client" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=1;fontColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="80" y="730" width="900" height="30" as="geometry"/>
+    </mxCell>
+
+    <!-- AI Compute Node 1 -->
+    <mxCell id="ainode1" value="AI Node 1  (NPU / GPU)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="180" y="770" width="500" height="200" as="geometry"/>
+    </mxCell>
+    <mxCell id="vllm1" value="vllm_ascend  (Pod)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=center;fontStyle=1;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="210" y="810" width="440" height="150" as="geometry"/>
+    </mxCell>
+    <mxCell id="client1" value="mooncake_client&#10;--master-server-address = etcd-svc:2379" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="230" y="850" width="400" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- AI Compute Node 2 -->
+    <mxCell id="ainode2" value="AI Node 2  (NPU / GPU)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="720" y="770" width="500" height="200" as="geometry"/>
+    </mxCell>
+    <mxCell id="vllm2" value="vllm_ascend  (Pod)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=center;fontStyle=1;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="750" y="810" width="440" height="150" as="geometry"/>
+    </mxCell>
+    <mxCell id="client2" value="mooncake_client&#10;--master-server-address = etcd-svc:2379" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="770" y="850" width="400" height="90" as="geometry"/>
+    </mxCell>
+
+    <!-- Edges: client → etcd Service (discover leader) -->
+    <mxCell id="c2e-1" value="① discover leader address&#10;via etcd-svc:2379" style="endArrow=classic;html=1;strokeColor=#d6b656;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.3;entryY=1;entryDx=0;entryDy=0;fontSize=10;fontColor=#7a6a2a;align=center;" edge="1" source="client1" target="etcd-svc" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="430" y="740"/>
+          <mxPoint x="572" y="470"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="c2e-2" value="① discover leader address&#10;via etcd-svc:2379" style="endArrow=classic;html=1;strokeColor=#d6b656;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.7;entryY=1;entryDx=0;entryDy=0;fontSize=10;fontColor=#7a6a2a;align=center;" edge="1" source="client2" target="etcd-svc" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="970" y="740"/>
+          <mxPoint x="828" y="470"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Edges: client → master leader (RPC) -->
+    <mxCell id="c2l-1" value="② RPC to leader&#10;rpc_address : rpc_port" style="endArrow=classic;html=1;strokeColor=#82b366;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=10;fontColor=#3f6f3a;align=center;" edge="1" source="client1" target="master-leader" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="150" y="895"/>
+          <mxPoint x="150" y="730"/>
+          <mxPoint x="270" y="730"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="c2l-2" value="② RPC to leader&#10;rpc_address : rpc_port" style="endArrow=classic;html=1;strokeColor=#82b366;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=10;fontColor=#3f6f3a;align=center;" edge="1" source="client2" target="master-leader" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="700" y="895"/>
+          <mxPoint x="700" y="740"/>
+          <mxPoint x="270" y="740"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ============ Legend ============ -->
+    <mxCell id="legend-box" value="Legend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;verticalAlign=top;align=left;fontStyle=1;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+      <mxGeometry x="1080" y="370" width="240" height="100" as="geometry"/>
+    </mxCell>
+    <mxCell id="lg-1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+      <mxGeometry x="1090" y="400" width="20" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="lg-1t" value="etcd" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1120" y="400" width="60" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="lg-2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=3;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="400" width="20" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="lg-2t" value="master leader" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1210" y="400" width="100" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="lg-3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="1090" y="430" width="20" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="lg-3t" value="master follower / vllm" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1120" y="430" width="160" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="lg-4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+      <mxGeometry x="1090" y="450" width="20" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="lg-4t" value="Service / mooncake_client" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1120" y="450" width="180" height="20" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>
