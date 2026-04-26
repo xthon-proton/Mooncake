@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="UML Class Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="20" width="400" height="40" as="geometry"/>
+    </mxCell>
+
+    <!-- Abstract Base Class: Animal -->
+    <mxCell id="class-animal" value="&lt;i&gt;&lt;&lt;abstract&gt;&gt;&lt;/i&gt;&#xa;Animal" style="swimlane;fontStyle=1;align=center;startSize=40;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+      <mxGeometry x="380" y="80" width="240" height="160" as="geometry"/>
+    </mxCell>
+    <mxCell id="animal-attrs-divider" value="" style="line;strokeColor=#666666;" vertex="1" parent="class-animal">
+      <mxGeometry y="40" width="240" height="10" as="geometry"/>
+    </mxCell>
+    <mxCell id="animal-attrs" value="- name: String&#xa;- age: int" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-animal">
+      <mxGeometry y="50" width="240" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="animal-methods-divider" value="" style="line;strokeColor=#666666;" vertex="1" parent="class-animal">
+      <mxGeometry y="100" width="240" height="10" as="geometry"/>
+    </mxCell>
+    <mxCell id="animal-methods" value="+ getName(): String&#xa;+ makeSound(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-animal">
+      <mxGeometry y="110" width="240" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Concrete Class: Dog -->
+    <mxCell id="class-dog" value="Dog" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="120" y="340" width="220" height="150" as="geometry"/>
+    </mxCell>
+    <mxCell id="dog-attrs-divider" value="" style="line;strokeColor=#6c8ebf;" vertex="1" parent="class-dog">
+      <mxGeometry y="30" width="220" height="10" as="geometry"/>
+    </mxCell>
+    <mxCell id="dog-attrs" value="- breed: String&#xa;- trained: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-dog">
+      <mxGeometry y="40" width="220" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="dog-methods-divider" value="" style="line;strokeColor=#6c8ebf;" vertex="1" parent="class-dog">
+      <mxGeometry y="90" width="220" height="10" as="geometry"/>
+    </mxCell>
+    <mxCell id="dog-methods" value="+ makeSound(): void&#xa;+ fetch(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-dog">
+      <mxGeometry y="100" width="220" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Concrete Class: Cat -->
+    <mxCell id="class-cat" value="Cat" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="660" y="340" width="220" height="150" as="geometry"/>
+    </mxCell>
+    <mxCell id="cat-attrs-divider" value="" style="line;strokeColor=#6c8ebf;" vertex="1" parent="class-cat">
+      <mxGeometry y="30" width="220" height="10" as="geometry"/>
+    </mxCell>
+    <mxCell id="cat-attrs" value="- indoor: boolean&#xa;- lives: int" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-cat">
+      <mxGeometry y="40" width="220" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="cat-methods-divider" value="" style="line;strokeColor=#6c8ebf;" vertex="1" parent="class-cat">
+      <mxGeometry y="90" width="220" height="10" as="geometry"/>
+    </mxCell>
+    <mxCell id="cat-methods" value="+ makeSound(): void&#xa;+ purr(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-cat">
+      <mxGeometry y="100" width="220" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Composition Owner -->
+    <mxCell id="class-owner" value="Owner" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+      <mxGeometry x="380" y="580" width="240" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="owner-attrs-divider" value="" style="line;strokeColor=#82b366;" vertex="1" parent="class-owner">
+      <mxGeometry y="30" width="240" height="10" as="geometry"/>
+    </mxCell>
+    <mxCell id="owner-attrs" value="- name: String&#xa;- pets: List&lt;Animal&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-owner">
+      <mxGeometry y="40" width="240" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="owner-methods-divider" value="" style="line;strokeColor=#82b366;" vertex="1" parent="class-owner">
+      <mxGeometry y="90" width="240" height="10" as="geometry"/>
+    </mxCell>
+    <mxCell id="owner-methods" value="+ addPet(a: Animal): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-owner">
+      <mxGeometry y="100" width="240" height="30" as="geometry"/>
+    </mxCell>
+
+    <!-- Inheritance edges (hollow triangle = generalization) -->
+    <mxCell id="inh-dog-animal" style="endArrow=block;endFill=0;startArrow=none;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" source="class-dog" target="class-animal" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="inh-cat-animal" style="endArrow=block;endFill=0;startArrow=none;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;" edge="1" source="class-cat" target="class-animal" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Composition edge: Owner "owns" Animal(s) -->
+    <mxCell id="comp-owner-animal" value="owns" style="endArrow=open;startArrow=ERmandOne;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" source="class-owner" target="class-animal" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>
