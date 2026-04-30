@@ -1,0 +1,8 @@
+# 排除可能误入 build context 的体积大、敏感、非必要文件
+.git
+.gitignore
+*.md
+*.tar.gz
+*.7z
+*.log
+**/.DS_Store

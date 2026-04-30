@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  pre_mooncake.xml
+  ====================================================================
+  阶段一源码拉取清单。工程任务按本清单把每个 <project> 拉取到对应
+  ${WORKSPACE}/src/<dest> 目录。脚本不再做 git clone / git submodule。
+
+  约定：
+    * dest 路径相对于 ${WORKSPACE}/src/
+    * 所有 revision 必须固定到 tag 或具体 commit，禁止滚动分支，
+      以保证可复现构建。
+  ====================================================================
+-->
+<manifest>
+
+  <!-- ============== 主仓 ============== -->
+  <project name="Mooncake"
+           remote="https://github.com/kvcache-ai/Mooncake.git"
+           revision="refs/tags/v0.3.10"
+           dest="Mooncake"/>
+
+  <!--
+    pybind11：v0.3.10 的 .gitmodules 写的是 branch=stable（滚动），
+    工程任务无外网，且 stable 滚动不可复现 → manifest 中固定到 v0.3.4
+    （按 #2 澄清结果）。拉取后由 20_build_mooncake.sh 软链/拷贝到
+    Mooncake/extern/pybind11/，注意不要嵌套成
+    Mooncake/extern/pybind11/pybind11/。
+  -->
+  <project name="pybind11"
+           remote="https://github.com/pybind/pybind11.git"
+           revision="refs/tags/v0.3.4"
+           dest="pybind11"/>
+
+  <!--
+    yalantinglibs：v0.3.10 的 Mooncake 不强制版本（按 #1 澄清），
+    使用 v0.5.6。预编译装 /usr/local，供 cpp_protobuf 等下游链接。
+  -->
+  <project name="yalantinglibs"
+           remote="https://github.com/alibaba/yalantinglibs.git"
+           revision="refs/tags/v0.5.6"
+           dest="yalantinglibs"/>
+
+  <!-- ============== 7 个三方依赖 ============== -->
+  <project name="jsoncpp"
+           remote="https://github.com/open-source-parsers/jsoncpp.git"
+           revision="refs/tags/1.9.5"
+           dest="deps/jsoncpp"/>
+
+  <!-- glog v0.7.0（按 #4 澄清固定） -->
+  <project name="glog"
+           remote="https://github.com/google/glog.git"
+           revision="refs/tags/v0.7.0"
+           dest="deps/glog"/>
+
+  <project name="yaml-cpp"
+           remote="https://github.com/jbeder/yaml-cpp.git"
+           revision="refs/tags/yaml-cpp-0.7.0"
+           dest="deps/yaml-cpp"/>
+
+  <project name="gflags"
+           remote="https://github.com/gflags/gflags.git"
+           revision="refs/tags/v2.2.2"
+           dest="deps/gflags"/>
+
+  <project name="xxhash"
+           remote="https://github.com/Cyan4973/xxHash.git"
+           revision="refs/tags/v0.8.2"
+           dest="deps/xxhash"/>
+
+  <project name="etcd-cpp-apiv3"
+           remote="https://github.com/etcd-cpp-apiv3/etcd-cpp-apiv3.git"
+           revision="refs/tags/v0.15.4"
+           dest="deps/etcd-cpp-apiv3"/>
+
+  <project name="cpprestsdk"
+           remote="https://github.com/microsoft/cpprestsdk.git"
+           revision="refs/tags/v2.10.18"
+           dest="deps/cpprestsdk"/>
+
+</manifest>

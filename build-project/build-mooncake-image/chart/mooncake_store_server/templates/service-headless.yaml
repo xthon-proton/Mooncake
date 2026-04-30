@@ -1,0 +1,22 @@
+{{/* 无头 Service：StatefulSet 必需，提供稳定 Pod DNS 名 */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mooncake.headlessName" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mooncake.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  selector:
+    {{- include "mooncake.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: rpc
+      port: {{ .Values.master.rpcPort }}
+      targetPort: {{ .Values.master.rpcPort }}
+    - name: metrics
+      port: {{ .Values.master.metricsPort }}
+      targetPort: {{ .Values.master.metricsPort }}
+    - name: http-meta
+      port: {{ .Values.master.httpMetadataServerPort }}
+      targetPort: {{ .Values.master.httpMetadataServerPort }}

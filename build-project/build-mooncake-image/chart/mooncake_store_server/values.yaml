@@ -1,0 +1,78 @@
+# =============================================================================
+# values.yaml — Mooncake-Store-Server
+# 仅放真正需要"按环境差异化"的配置；其余全部固化在模板里以减少误配。
+# =============================================================================
+
+global:
+  # 镜像拉取策略
+  imagePullPolicy: IfNotPresent
+  # 架构标签（仅用于 nodeSelector / 描述，不参与镜像名拼接）
+  arch: "arm_64"
+  # 命名空间（service-headless / service / sts 都使用它）
+  namespace: "mooncake"
+
+image:
+  repository: mooncake-store-server
+  tag: "v0.1"
+  # 完整镜像 = ${repository}:${tag}
+
+replicaCount: 2
+
+# ----- 反亲和性开关：单节点 false；多节点强烈建议 true ---------------------
+podAntiAffinity:
+  enabled: false   # 多节点部署时改 true：每节点至多 1 个 master pod
+
+# ----- mooncake_master 启动参数 --------------------------------------------
+master:
+  rpcPort: 50051
+  metricsPort: 9001
+  httpMetadataServerPort: 8888
+  enableHA: true
+  enableHttpMetadataServer: true
+  clusterId: "mooncake"
+  logDir: "/tmp/"
+  alsologtostderr: true
+  # etcd 地址（替换为实际部署）
+  etcdEndpoints: "http://mooncake-etcd-svc.kube-system.svc.cluster.local:2379"
+  # rpc bind 策略：
+  #   pod_ip   —— 推荐（POD_IP，bind 稳定）
+  #   pod_fqdn —— headless service 的 FQDN（需 etcd-readiness 之外再加 DNS 等待 initContainer）
+  rpcAddressMode: "pod_ip"
+
+# ----- 等待 etcd 就绪（可选 initContainer） --------------------------------
+waitEtcd:
+  enabled: false
+  image: "busybox:1.36"
+  host: ""        # 例如 mooncake-etcd-svc.kube-system.svc.cluster.local
+  port: 2379
+
+# ----- 探针（按 #9 澄清：主备一致，统一打 8888 / TCP） ---------------------
+probes:
+  port: 8888
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 3
+  liveness:
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    failureThreshold: 5
+
+# ----- 资源 -----------------------------------------------------------------
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    cpu: "2"
+    memory: "2Gi"
+
+# ----- 容忍 -----------------------------------------------------------------
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+serviceAccount:
+  create: true
+  name: ""   # 留空则使用 fullname
