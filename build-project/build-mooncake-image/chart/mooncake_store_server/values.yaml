@@ -36,7 +36,12 @@ master:
   etcdEndpoints: "http://mooncake-etcd-svc.kube-system.svc.cluster.local:2379"
   # rpc bind 策略：
   #   pod_ip   —— 推荐（POD_IP，bind 稳定）
-  #   pod_fqdn —— headless service 的 FQDN（需 etcd-readiness 之外再加 DNS 等待 initContainer）
+  #   pod_fqdn —— headless service 的 FQDN
+  #              切换到 pod_fqdn 时，statefulset 模板会自动启用 wait-self-dns
+  #              initContainer，该 initContainer 会复用 .Values.waitEtcd.image
+  #              （默认 busybox:1.36，自带 nslookup）。如果你在 waitEtcd.image
+  #              里换成了不带 nslookup 的发行版，请同步替换 wait-self-dns 的
+  #              检测命令（如改用 `getent hosts` 或 `dig`）。
   rpcAddressMode: "pod_ip"
 
 # ----- 等待 etcd 就绪（可选 initContainer） --------------------------------

@@ -23,7 +23,8 @@ echo "[entrypoint] uname   : $(uname -a)"
 echo "[entrypoint] LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}"
 
 # 1) 启动期依赖自检（与构建期同样的逻辑，防止运行时挂载覆盖了 lib/）
-if missing="$(ldd /opt/mooncake/mooncake_master 2>/dev/null | grep 'not found' || true)"; [ -n "$missing" ]; then
+missing="$(ldd /opt/mooncake/mooncake_master 2>/dev/null | grep 'not found' || true)"
+if [ -n "$missing" ]; then
     echo "[entrypoint][FATAL] missing shared libs:"
     echo "$missing" | sed 's/^/    /'
     exit 1
