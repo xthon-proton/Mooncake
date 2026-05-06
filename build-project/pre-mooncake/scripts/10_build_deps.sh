@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 10_build_deps.sh — 编译 7 个三方依赖到 /usr/local
+# 10_build_deps.sh — 编译 6 个三方依赖到 /usr/local
 #
 # 顺序按"被依赖关系"排：
-#     gflags → glog            （glog 依赖 gflags）
-#     jsoncpp / yaml-cpp / xxhash / cpprestsdk         （独立）
-#     etcd-cpp-apiv3           （依赖 cpprestsdk + protobuf + grpc）
-#     yalantinglibs            （header-only-ish；安装到 /usr/local）
+#     gflags → glog                                 （glog 依赖 gflags）
+#     jsoncpp / yaml-cpp / xxhash / msgpack-c       （独立）
+#     yalantinglibs                                  （header-only-ish；安装到 /usr/local）
+#
+# 注：etcd-cpp-apiv3 / cpprestsdk 不在源码编译之列 —— EulerOS 基础镜像 +
+#     00_preflight.sh 的 yum 步骤已提供其 -devel 包，源码 manifest 也不再拉取。
 #
 # 每个依赖：build-out-of-tree（${BUILD_DIR}/<name>）+ make install。
 # =============================================================================
@@ -72,21 +74,16 @@ cmake_build xxhash deps/xxhash/cmake_unofficial \
     -DBUILD_SHARED_LIBS=ON \
     -DXXHASH_BUILD_XXHSUM=OFF
 
-# ---- 6. cpprestsdk --------------------------------------------------------
-cmake_build cpprestsdk deps/cpprestsdk \
+# ---- 6. msgpack-c ---------------------------------------------------------
+# manifest 拉取的 msgpack-c 仓库（C 库 + C++ 头）。EulerOS 基础镜像未提供，
+# 必须源码编译。BUILD_CPP=ON 同时安装 C++ 头文件供 mooncake_master 使用。
+cmake_build msgpack-c deps/msgpack-c \
     -DBUILD_SHARED_LIBS=ON \
-    -DBUILD_TESTS=OFF \
-    -DBUILD_SAMPLES=OFF \
-    -DCPPREST_EXCLUDE_WEBSOCKETS=ON \
-    -DCPPREST_EXCLUDE_COMPRESSION=OFF
+    -DMSGPACK_BUILD_TESTS=OFF \
+    -DMSGPACK_BUILD_EXAMPLES=OFF \
+    -DMSGPACK_CXX17=ON
 
-# ---- 7. etcd-cpp-apiv3 ----------------------------------------------------
-ldconfig "${PREFIX}/lib" "${PREFIX}/lib64" || true
-cmake_build etcd-cpp-apiv3 deps/etcd-cpp-apiv3 \
-    -DBUILD_ETCD_CORE_ONLY=OFF \
-    -DBUILD_ETCD_TESTS=OFF
-
-# ---- 8. yalantinglibs（按 #1：v0.5.6） ------------------------------------
+# ---- 7. yalantinglibs（按 #1：v0.5.6） ------------------------------------
 cmake_build yalantinglibs yalantinglibs \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_BENCHMARK=OFF \

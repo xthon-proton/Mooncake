@@ -3,12 +3,15 @@
   pre_mooncake.xml
   ====================================================================
   阶段一源码拉取清单。工程任务按本清单把每个 <project> 拉取到对应
-  ${WORKSPACE}/src/<dest> 目录。脚本不再做 git clone / git submodule。
+  ${WORKSPACE}/<path> 目录。脚本不再做 git clone / git submodule。
 
   约定：
-    * dest 路径相对于 ${WORKSPACE}/src/
+    * path 相对于 ${WORKSPACE}（不是相对于 src/），与工程任务的 manifest
+      schema 对齐；本仓约定统一放在 src/ 下，故所有 path 均以 src/ 起始。
     * 所有 revision 必须固定到 tag 或具体 commit，禁止滚动分支，
       以保证可复现构建。
+    * etcd-cpp-apiv3 / cpprestsdk 不在源码清单中：构建环境（EulerOS 基础镜像
+      + 00_preflight.sh 的 yum 步骤）已提供其 -devel 包，无需源码编译。
   ====================================================================
 -->
 <manifest>
@@ -17,7 +20,7 @@
   <project name="Mooncake"
            remote="https://github.com/kvcache-ai/Mooncake.git"
            revision="refs/tags/v0.3.10"
-           dest="Mooncake"/>
+           path="src/Mooncake"/>
 
   <!--
     pybind11：v0.3.10 的 .gitmodules 写的是 branch=stable（滚动），
@@ -29,7 +32,7 @@
   <project name="pybind11"
            remote="https://github.com/pybind/pybind11.git"
            revision="refs/tags/v0.3.4"
-           dest="pybind11"/>
+           path="src/pybind11"/>
 
   <!--
     yalantinglibs：v0.3.10 的 Mooncake 不强制版本（按 #1 澄清），
@@ -38,43 +41,43 @@
   <project name="yalantinglibs"
            remote="https://github.com/alibaba/yalantinglibs.git"
            revision="refs/tags/v0.5.6"
-           dest="yalantinglibs"/>
+           path="src/yalantinglibs"/>
 
-  <!-- ============== 7 个三方依赖 ============== -->
+  <!-- ============== 6 个三方依赖（源码编译） ============== -->
   <project name="jsoncpp"
            remote="https://github.com/open-source-parsers/jsoncpp.git"
            revision="refs/tags/1.9.5"
-           dest="deps/jsoncpp"/>
+           path="src/deps/jsoncpp"/>
 
   <!-- glog v0.7.0（按 #4 澄清固定） -->
   <project name="glog"
            remote="https://github.com/google/glog.git"
            revision="refs/tags/v0.7.0"
-           dest="deps/glog"/>
+           path="src/deps/glog"/>
 
   <project name="yaml-cpp"
            remote="https://github.com/jbeder/yaml-cpp.git"
            revision="refs/tags/yaml-cpp-0.7.0"
-           dest="deps/yaml-cpp"/>
+           path="src/deps/yaml-cpp"/>
 
   <project name="gflags"
            remote="https://github.com/gflags/gflags.git"
            revision="refs/tags/v2.2.2"
-           dest="deps/gflags"/>
+           path="src/deps/gflags"/>
 
   <project name="xxhash"
            remote="https://github.com/Cyan4973/xxHash.git"
            revision="refs/tags/v0.8.2"
-           dest="deps/xxhash"/>
+           path="src/deps/xxhash"/>
 
-  <project name="etcd-cpp-apiv3"
-           remote="https://github.com/etcd-cpp-apiv3/etcd-cpp-apiv3.git"
-           revision="refs/tags/v0.15.4"
-           dest="deps/etcd-cpp-apiv3"/>
-
-  <project name="cpprestsdk"
-           remote="https://github.com/microsoft/cpprestsdk.git"
-           revision="refs/tags/v2.10.18"
-           dest="deps/cpprestsdk"/>
+  <!--
+    msgpack-c：mooncake_master 链接需要的 msgpack 头文件 / 库。
+    EulerOS 基础镜像未提供，须源码编译。版本占位为 c-6.0.0，如需对齐
+    内部已验证版本请在此处统一修改（脚本不应散落版本号）。
+  -->
+  <project name="msgpack-c"
+           remote="https://github.com/msgpack/msgpack-c.git"
+           revision="refs/tags/c-6.0.0"
+           path="src/deps/msgpack-c"/>
 
 </manifest>

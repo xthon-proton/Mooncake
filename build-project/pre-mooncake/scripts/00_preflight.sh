@@ -20,7 +20,9 @@ log_info "SRC_DIR=$SRC_DIR (manifest 拉取根目录)"
 YUM_PKGS=(make cmake3 patch git tar gzip xz which file pkgconfig
           openssl-devel zlib-devel libcurl-devel libuuid-devel
           boost-devel protobuf-devel protobuf-compiler grpc-devel grpc-plugins
-          numactl-devel libibverbs-devel)
+          numactl-devel libibverbs-devel
+          # etcd-cpp-apiv3 / cpprestsdk 不再源码编译，依赖 EulerOS 基础源 -devel 包
+          cpprest-devel etcd-cpp-apiv3-devel)
 if command -v yum >/dev/null 2>&1; then
     log_info "尝试安装 yum 依赖（已装则跳过）"
     yum install -y "${YUM_PKGS[@]}" || log_warn "yum 安装出现错误，请人工核对"

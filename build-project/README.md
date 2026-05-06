@@ -19,7 +19,7 @@ build-project/
 │   └── scripts/
 │       ├── lib/common.sh                    ← 公共：日志 / 版本比较 / go 校验
 │       ├── 00_preflight.sh                  ← 环境校验（gcc-12 / go 1.26.1 / yum）
-│       ├── 10_build_deps.sh                 ← 7 个依赖按序编译并装入 /usr/local
+│       ├── 10_build_deps.sh                 ← 6 个依赖按序编译并装入 /usr/local
 │       ├── 20_build_mooncake.sh             ← cmake + make mooncake_master
 │       ├── 30_collect_artifact.sh           ← collect_libs + 打 tar.gz
 │       └── 40_push_artifact.sh              ← 推制品仓（mock）
@@ -88,8 +88,9 @@ build-project/
 | yaml-cpp | 0.7.0 | 源码编译 |
 | gflags | v2.2.2 | 源码编译 |
 | xxhash | v0.8.2 | 源码编译 |
-| etcd-cpp-apiv3 | v0.15.4 | 源码编译 |
-| cpprestsdk | v2.10.18 | 源码编译 |
+| msgpack-c | c-6.0.0 | 源码编译 |
+| etcd-cpp-apiv3 | v0.15.4 | **EulerOS yum -devel 包**（非源码） |
+| cpprestsdk | v2.10.18 | **EulerOS yum -devel 包**（非源码） |
 | go | **安装** 1.26.1 / **校验** ≥1.23.7 | 用于编译 `libetcd_wrapper.so` |
 | gcc | 12.x | 强制 GCC12 ABI |
 
