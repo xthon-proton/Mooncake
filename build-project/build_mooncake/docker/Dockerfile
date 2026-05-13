@@ -1,7 +1,7 @@
 # =============================================================================
 # Dockerfile — Mooncake-Store-Server (mooncake_master)
 #
-# build context 约定（由 00_pull_artifact.sh 准备）：
+# build context 约定（由 1_pull_artifact.sh 准备）：
 #   <context>/
 #     ├── Dockerfile
 #     ├── entrypoint.sh

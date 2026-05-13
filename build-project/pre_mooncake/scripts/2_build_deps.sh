@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 10_build_deps.sh — 编译 6 个三方依赖到 /usr/local
+# 2_build_deps.sh — 编译 6 个三方依赖到 /usr/local
 #
 # 顺序按"被依赖关系"排：
 #     gflags → glog                                 （glog 依赖 gflags）
@@ -8,13 +8,13 @@
 #     yalantinglibs                                  （header-only-ish；安装到 /usr/local）
 #
 # 注：etcd-cpp-apiv3 / cpprestsdk 不在源码编译之列 —— EulerOS 基础镜像 +
-#     00_preflight.sh 的 yum 步骤已提供其 -devel 包，源码 manifest 也不再拉取。
+#     1_preflight.sh 的 yum 步骤已提供其 -devel 包，源码 manifest 也不再拉取。
 #
 # 每个依赖：build-out-of-tree（${BUILD_DIR}/<name>）+ make install。
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="10_build_deps"
-source "$(dirname "$0")/lib/common.sh"
+SCRIPT_NAME="2_build_deps"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 require_env SRC_DIR BUILD_DIR GCC_TOOLCHAIN_PREFIX
 export PATH="${GCC_TOOLCHAIN_PREFIX}/bin:$PATH"

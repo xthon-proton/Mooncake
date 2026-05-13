@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 10_build_image.sh — docker build + 7z 打包
+# 2_build_image.sh — docker build + 7z 打包
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="10_build_image"
+SCRIPT_NAME="2_build_image"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-source "$(cd "$STAGE_DIR/../pre-mooncake/scripts/lib" && pwd)/common.sh"
+source "$(cd "$THIS_DIR/../../lib" && pwd)/common.sh"
 
 require_env WORKSPACE IMAGE_NAME IMAGE_TAG BASE_IMAGE BUILD_PROFILE
 
 CTX_DIR="${WORKSPACE}/build-context"
-[[ -d "$CTX_DIR" ]] || die "build context 缺失：$CTX_DIR（请先执行 00_pull_artifact.sh）"
+[[ -d "$CTX_DIR" ]] || die "build context 缺失：$CTX_DIR（请先执行 1_pull_artifact.sh）"
 
 GIT_SHA="$(git -C "$(dirname "$STAGE_DIR")/.." rev-parse --short=8 HEAD 2>/dev/null || echo unknown)"
 FULL_TAG="${IMAGE_NAME}:${IMAGE_TAG}"

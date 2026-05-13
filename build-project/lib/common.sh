@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 # =============================================================================
-# pre-mooncake/scripts/lib/common.sh
+# build-project/lib/common.sh
 #
-# 阶段一全部脚本（00_..40_*.sh）以及阶段二 build-mooncake-image/scripts/* 通过
-#     source "$(dirname "$0")/lib/common.sh"
-# 引入的公共函数库。包含：
+# 阶段一（pre_mooncake）与阶段二（build_mooncake）共享的公共函数库。
+# 所有脚本统一使用相同深度的相对路径 source 它，便于复制粘贴：
+#
+#     source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
+#
+# 因为两个阶段的脚本都位于 build-project/<stage>/scripts/<n>_xxx.sh，
+# `../../lib` 总能正确解析到 build-project/lib/。
+#
+# 内容：
 #   * 日志：log_info / log_warn / log_error / die
 #   * 环境校验：require_env  （多个变量名，任一未定义/为空则 die）
 #   * Go 版本校验：check_go_version  （`go env GOVERSION` vs $GO_MIN_VERSION）

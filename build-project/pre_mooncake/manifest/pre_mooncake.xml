@@ -11,7 +11,7 @@
     * 所有 revision 必须固定到 tag 或具体 commit，禁止滚动分支，
       以保证可复现构建。
     * etcd-cpp-apiv3 / cpprestsdk 不在源码清单中：构建环境（EulerOS 基础镜像
-      + 00_preflight.sh 的 yum 步骤）已提供其 -devel 包，无需源码编译。
+      + 1_preflight.sh 的 yum 步骤）已提供其 -devel 包，无需源码编译。
   ====================================================================
 -->
 <manifest>
@@ -25,7 +25,7 @@
   <!--
     pybind11：v0.3.10 的 .gitmodules 写的是 branch=stable（滚动），
     工程任务无外网，且 stable 滚动不可复现 → manifest 中固定到 v0.3.4
-    （按 #2 澄清结果）。拉取后由 20_build_mooncake.sh 软链/拷贝到
+    （按 #2 澄清结果）。拉取后由 3_build_mooncake.sh 软链/拷贝到
     Mooncake/extern/pybind11/，注意不要嵌套成
     Mooncake/extern/pybind11/pybind11/。
   -->

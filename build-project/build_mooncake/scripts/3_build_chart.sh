@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 20_build_chart.sh — helm package + 7z 打包
+# 3_build_chart.sh — helm package + 7z 打包
 #
 # 输出结构（解开 7z 后）：
 #   V0.1_Chart_Any_Docker-MooncakeStoreServer-Any.7z
@@ -11,10 +11,10 @@
 #           └── templates/...
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="20_build_chart"
+SCRIPT_NAME="3_build_chart"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-source "$(cd "$STAGE_DIR/../pre-mooncake/scripts/lib" && pwd)/common.sh"
+source "$(cd "$THIS_DIR/../../lib" && pwd)/common.sh"
 
 require_env WORKSPACE CHART_VERSION
 

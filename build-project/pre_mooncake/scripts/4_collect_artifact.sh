@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 30_collect_artifact.sh — 收集运行时 .so + 二进制并打 tar.gz
+# 4_collect_artifact.sh — 收集运行时 .so + 二进制并打 tar.gz
 #
 # 相比 [3] 提供的脚本，做了这些优化：
 #   1. 路径全部基于 ${WORKSPACE}/tmp/mooncake/{bin,lib}，可重入；
@@ -11,8 +11,8 @@
 #   5. 生成 MANIFEST.txt（git sha + 依赖版本 + 构建时间）一并打包。
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="30_collect_artifact"
-source "$(dirname "$0")/lib/common.sh"
+SCRIPT_NAME="4_collect_artifact"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 require_env WORKSPACE MOONCAKE_VERSION GCC_TOOLCHAIN_PREFIX SRC_DIR
 
@@ -85,5 +85,5 @@ tar -C "$TMP_DIR" -czf "${DIST_DIR}/${ARTIFACT}" mooncake/
 log_info "制品已生成：${DIST_DIR}/${ARTIFACT}"
 ls -lh "${DIST_DIR}/${ARTIFACT}"
 
-# 把制品名写入文件，供 40_push_artifact.sh 消费
+# 把制品名写入文件，供 5_push_artifact.sh 消费
 echo "${ARTIFACT}" > "${DIST_DIR}/.latest_artifact"

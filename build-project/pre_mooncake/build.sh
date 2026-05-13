@@ -8,8 +8,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export STAGE_DIR="$SCRIPT_DIR"
 
-bash "$SCRIPT_DIR/scripts/00_preflight.sh"
-bash "$SCRIPT_DIR/scripts/10_build_deps.sh"
-bash "$SCRIPT_DIR/scripts/20_build_mooncake.sh"
-bash "$SCRIPT_DIR/scripts/30_collect_artifact.sh"
-bash "$SCRIPT_DIR/scripts/40_push_artifact.sh"
+bash "$SCRIPT_DIR/scripts/1_preflight.sh"
+bash "$SCRIPT_DIR/scripts/2_build_deps.sh"
+bash "$SCRIPT_DIR/scripts/3_build_mooncake.sh"
+bash "$SCRIPT_DIR/scripts/4_collect_artifact.sh"
+bash "$SCRIPT_DIR/scripts/5_push_artifact.sh"

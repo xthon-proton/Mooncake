@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 30_push_product.sh — 推送 image 7z + chart 7z 到产品仓
+# 4_push_product.sh — 推送 image 7z + chart 7z 到产品仓
 # 当前为 mock 实现：仅打印将要执行的上传命令。
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="30_push_product"
+SCRIPT_NAME="4_push_product"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-source "$(cd "$STAGE_DIR/../pre-mooncake/scripts/lib" && pwd)/common.sh"
+source "$(cd "$THIS_DIR/../../lib" && pwd)/common.sh"
 
 require_env WORKSPACE PRODUCT_REPO_BASE CHART_VERSION
 

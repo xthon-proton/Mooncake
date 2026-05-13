@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 00_pull_artifact.sh — 从制品仓拉取阶段一的 tar.gz，并解压到 build context
+# 1_pull_artifact.sh — 从制品仓拉取阶段一的 tar.gz，并解压到 build context
 # 完成后 build context 形态：
 #   ${WORKSPACE}/build-context/
 #     ├── Dockerfile            ← 由本脚本拷入
@@ -10,12 +10,13 @@
 #     └── lib/*.so
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="00_pull_artifact"
+SCRIPT_NAME="1_pull_artifact"
 
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-# 复用阶段一的 common.sh（路径硬约定：仓库根/build-project/pre-mooncake/scripts/lib）
-source "$(cd "$STAGE_DIR/../pre-mooncake/scripts/lib" && pwd)/common.sh"
+# 公共库统一挪到 build-project/lib/common.sh，两个阶段共享，路径深度一致：
+# build-project/<stage>/scripts/<n>_xxx.sh → ../../lib/common.sh
+source "$(cd "$THIS_DIR/../../lib" && pwd)/common.sh"
 
 require_env WORKSPACE MOONCAKE_VERSION ARTIFACT_REPO_BASE
 

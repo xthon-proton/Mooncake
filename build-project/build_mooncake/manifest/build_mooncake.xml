@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  build_mooncake_image.xml
+  build_mooncake.xml
   ====================================================================
   阶段二源码拉取清单。本阶段不需要 Mooncake 源码，
   只需要本工程目录（Dockerfile / chart 模板 / 脚本）。
   实际制品（mooncake_master 的 tar.gz）由阶段二脚本从制品仓拉取。
+
+  约定：path 相对于 ${WORKSPACE}（与 pre_mooncake.xml 一致）。
   ====================================================================
 -->
 <manifest>
   <project name="build-project"
            remote="https://github.com/xthon-proton/Mooncake.git"
            revision="HEAD"
-           dest="build-project"
-           sparse_paths="build-project/build-mooncake-image"/>
+           path="src/build-project"
+           sparse_paths="build-project/build_mooncake build-project/lib"/>
 </manifest>

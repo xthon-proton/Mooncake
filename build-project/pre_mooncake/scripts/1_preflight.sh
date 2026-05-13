@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 00_preflight.sh — 环境校验
+# 1_preflight.sh — 环境校验
 #   1. 必需 yum 包（osc 上常态化提供，这里 best-effort 安装）
 #   2. GCC 12 工具链可用且为 default
 #   3. go 版本 >= GO_MIN_VERSION（1.23.7）；若 < 1.26.1 给 WARN（与安装目标对齐）
 #   4. WORKSPACE / SRC_DIR 存在
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="00_preflight"
-source "$(dirname "$0")/lib/common.sh"
+SCRIPT_NAME="1_preflight"
+# 公共库统一在 build-project/lib/common.sh，所有阶段、所有脚本路径深度一致：
+# build-project/<stage>/scripts/<n>_xxx.sh → ../../lib/common.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 require_env WORKSPACE GO_MIN_VERSION GO_INSTALL_VERSION GCC_TOOLCHAIN_PREFIX
 

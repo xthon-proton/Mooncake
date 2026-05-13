@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 20_build_mooncake.sh — 编译 mooncake_master
+# 3_build_mooncake.sh — 编译 mooncake_master
 #
 # 步骤：
 #   1) 把 manifest 拉下来的 pybind11 源码"放置"到 Mooncake/extern/pybind11/
@@ -10,8 +10,8 @@
 #   4) 校验产物 + ldd 缺失检查。
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="20_build_mooncake"
-source "$(dirname "$0")/lib/common.sh"
+SCRIPT_NAME="3_build_mooncake"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 require_env SRC_DIR BUILD_DIR GCC_TOOLCHAIN_PREFIX
 export PATH="${GCC_TOOLCHAIN_PREFIX}/bin:$PATH"

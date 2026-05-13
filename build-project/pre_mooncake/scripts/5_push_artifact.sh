@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# 40_push_artifact.sh — 推送 tar.gz 制品到制品仓
+# 5_push_artifact.sh — 推送 tar.gz 制品到制品仓
 #
 # 当前为 mock 实现：仅打印将要执行的上传命令；生产环境替换为
 # 公司内部使用的客户端（如 osc cli / curl PUT / artifactory cli 等）。
 # =============================================================================
 set -euo pipefail
-SCRIPT_NAME="40_push_artifact"
-source "$(dirname "$0")/lib/common.sh"
+SCRIPT_NAME="5_push_artifact"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 require_env DIST_DIR MOONCAKE_VERSION ARTIFACT_REPO_BASE
 
