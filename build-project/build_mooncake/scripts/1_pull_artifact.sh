@@ -18,8 +18,8 @@ SCRIPT_NAME="1_pull_artifact"
 
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-# 复用阶段一的 common.sh（路径硬约定：仓库根/build-project/pre_mooncake/scripts/lib）
-source "$(cd "$STAGE_DIR/../pre_mooncake/scripts/lib" && pwd)/common.sh"
+# 跨阶段唯一公共函数库（build-project/lib/common.sh）
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 # 设置参数默认值
 : "${MOONCAKE_VERSION:=v0.3.10}"

@@ -12,7 +12,7 @@
 # =============================================================================
 set -euo pipefail
 SCRIPT_NAME="2_build_deps"
-source "$(dirname "$0")/lib/common.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 require_env SRC_DIR BUILD_DIR GCC_HOME_12_3
 # 1_preflight.sh 中已声明
