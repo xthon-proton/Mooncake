@@ -14,20 +14,14 @@ mooncake-master
 mooncake-master-headless
 {{- end -}}
 
-{{- define "mooncake.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-{{- default (include "mooncake.fullname" .) .Values.serviceAccount.name -}}
-{{- else -}}
-{{- default "default" .Values.serviceAccount.name -}}
-{{- end -}}
-{{- end -}}
-
 {{- define "mooncake.labels" -}}
 app: {{ include "mooncake.name" . }}
-app.kubernetes.io/name: {{ include "mooncake.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{- define "mooncake.annotations" -}}
+gde.huawei.com/isolation-when-data-network-abnormal: "true"
+application.kubernetes.io/logsrotate: '[{"name":"msslog", "rotate":"Daily","annotations":{"maxZipCount": "10", "maxZipSize": "20"}}]'
+paas.kubernetes.io/resource-limits: '{"mooncake-store-server":{"docker/ulimit.nofile":"50000:50000","docker/ulimit.nproc":"50000:50000"}}'
 {{- end -}}
 
 {{- define "mooncake.selectorLabels" -}}
