@@ -1,0 +1,67 @@
+---
+version: 2.0
+buildspace:
+  fixed: true #是否固定构建目录，同一个构建工程的不同构建根目录会被固定到一个/usr1
+env:
+  resource:
+    type: 'docker'
+    image: ${build_image_arm}
+    class: 8U16G   # 必填项  4U8G/8U16G/16U32G
+    pool: ${build_pool_arm}
+    mode: toolbox
+    cache:
+      - type: maven
+        path: /usr1/.m2/repository
+      - type: workspace
+      - type: binary
+        name: dsp-cache
+        path: world
+        save: true
+params:
+  - name: product
+    value: cloudbuild2.0
+  - name: CB_AUTO_CHECK_VERSION
+    value: 2.0
+  - name: checkoutPath    #代码checkout path。可自定义
+    value: sourceRepo
+  - name: cmc_type
+    value: ARM
+  - name: build_image_arm
+    value: szvecr02.his.huawei.com:80/ecr-build/euler2_12_arm_en_application_development_center_26_3_0_docker_build_v02:6.0
+  - name: build_pool_arm
+    value: docker-sz-service-arm-ondocker-64u-01
+  - name: mooncake_build_git_url
+    value: https://codehub-dg-y.huawei.com/GTS_Cloud_Platform/Mooncake-build.git
+#构建步骤
+steps:
+  PRE_BUILD: # 构建准备步骤
+    - checkout: # 检出当前源码库
+        path: ${checkoutPath}  # 下载子路径，可选，如果配置，那么将会把代码下载到子路径下，如果不配置，那么将会下载到当前路径
+    - gitlab: # 下载各服务的代码仓库
+        url: ${mooncake_build_git_url} # 代码仓库地址
+        branch: ${branch} # 代码仓库分支
+        path: mooncake # 下载子路径，铺开，没有root目录层级
+    - gitlab: # 下载签名脚本的代码仓库
+        url: https://codehub-dg-y.huawei.com/GTS_Cloud_Platform/signature_cms.git
+        branch: master
+        path: signature
+    - gitlab: # 下载生成release信息的代码仓库
+        url: https://codehub-dg-y.huawei.com/GTS_Cloud_Platform/BuildCommonTools.git # 代码仓库地址
+        branch: master # 代码仓库分支
+        path: BuildCommonTools # 下载子路径
+    - manifest_checkout:
+        manifest_file: $WORKSPACE/mooncake/pre_mooncake/pre_mooncake_reference.xml
+        groups: mooncake
+  BUILD:
+    - build_execute:
+        command: |
+          cd $WORKSPACE/mooncake/pre_mooncake
+          dos2unix build.sh
+          bash -x build.sh
+  POST_BUILD:  #上传包
+    - when:
+        condition: incremental_package == null || incremental_package =~ ".*,haproxy,.*"
+        steps:
+            - sh:    # 该sh阶段，用于生成基线信息树。
+                command: |
+                  sh $WORKSPACE/pre-build.sh report

@@ -1,0 +1,143 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mooncake.fullname" . }}
+  namespace: {{ .Values.common.namespace }}
+  labels:
+    {{- include "mooncake.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "mooncake.headlessName" . }}    # 必须对应无头 Service 名
+  replicas: {{ .Values.common.replicas }}
+  selector:
+    matchLabels:
+      {{- include "mooncake.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mooncake.labels" . | nindent 8 }}
+      annotations:
+        {{- include "mooncake.annotations" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: {{ .Values.kube.use_service_account }}
+      {{- if eq .Values.kube.use_service_account true }}
+      serviceAccountName: {{ .Values.kube.service_account_name }}
+      {{- end }}
+
+      hostNetwork: false
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      # ------------------------------------------------------------
+      # 反亲和性：单节点关闭、多节点强烈建议打开（按 values 开关）
+      # ------------------------------------------------------------
+      {{- if .Values.podAntiAffinity.enabled }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  {{- include "mooncake.selectorLabels" . | nindent 18 }}
+              topologyKey: kubernetes.io/hostname
+      {{- end }}
+
+      # 一些默认配置
+      nodeSelector:
+        modelbase: "modelbase"
+      dnsPolicy: Default
+      enableServiceLinks: false
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+
+      volumes:
+        - name: msslog
+          hostPath:
+            path: /var/paas/sys/log/mooncake-store-server
+            type: DirectoryOrCreate
+      containers:
+        - name: {{ .Values.common.app_name }}
+          image: "{{ .Values.kube.hw_swr_repo }}{{ .Values.kube.image_name }}:{{ .Values.kube.dsp_image_tag }}"
+          imagePullPolicy: {{ .Values.kube.image_pull_policy }}
+          ports:
+            - name: rpc
+              containerPort: {{ .Values.master.rpc_port }}
+            - name: metrics
+              containerPort: {{ .Values.master.metrics_port }}
+            - name: http-meta
+              containerPort: {{ .Values.master.http_metadata_server_port }}
+
+          # ----- downward API：注入 Pod IP / Pod 名 / namespace -----
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP # ← rpc_address 的来源
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name # 如 mooncake-master-0
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          # ----- 启动参数 -----
+          # 默认使用 POD_IP；FQDN 模式作为可选（配 wait-self-dns initContainer）
+          args:
+            {{- if eq .Values.master.rpc_address_mode "pod_fqdn" }}
+            - --rpc_address=$(POD_NAME).{{ include "mooncake.headlessName" . }}.$(POD_NAMESPACE).svc.cluster.local
+            {{- else }}
+            - --rpc_address=$(POD_IP)
+            {{- end }}
+            - --rpc_port={{ .Values.master.rpc_port }}
+            - --metrics_port={{ .Values.master.metrics_port }}
+            - --enable_ha={{ .Values.master.enable_ha }}
+            - --etcd_endpoints={{ .Values.master.etcdEndpoints }}
+            {{- if .Values.enabled_tls }}
+            - --enable_http_metadata_server=https://{{ .Values.master.enable_http_metadata_server }}
+            {{- else }}
+            - -enable_http_metadata_server=http://{{ .Values.master.enable_http_metadata_server }}
+            {{- end }}
+            - --http_metadata_server_port={{ .Values.master.http_metadata_server_port }}
+            - --cluster_id={{ .Values.master.cluster_id }}
+            - --alsologtostderr={{ .Values.master.also_log_to_stderr }}
+            - --log_dir={{ .Values.master.logDir }}
+
+          # ----------------------------------------------------------
+          # 健康检查（主备统一，都用 tcpSocket:8888）
+          # 实现：
+          #   1) 备机不监听 50051/9001，但始终监听 http_metadata_server_port
+          #      → 用 8888 做探针
+          #   2) liveness 比 readiness 宽松（更长 period / 更高 failureThreshold），
+          #      避免主切备瞬时抖动直接被 kill；
+          #   3) 不使用 httpGet，避免 glog keep-alive 的探针噪音日志。
+          # ----------------------------------------------------------
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.probes.port }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+            successThreshold: {{ .Values.probes.readiness.successThreshold }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.probes.port }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+            successThreshold: {{ .Values.probes.liveness.successThreshold }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          securityContext:
+            runAsUser: 1000
+
+          volumeMounts:
+            - mountPath: /opt/mooncake/logs
+              name: msslog

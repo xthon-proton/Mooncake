@@ -1,0 +1,21 @@
+{{/* 普通 Service：metrics / HTTP metadata 的集群内统一入口 */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mooncake.fullname" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mooncake.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "mooncake.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: rpc
+      port: {{ .Values.master.rpcPort }}
+      targetPort: {{ .Values.master.rpcPort }}
+    - name: metrics
+      port: {{ .Values.master.metricsPort }}
+      targetPort: {{ .Values.master.metricsPort }}
+    - name: http-meta
+      port: {{ .Values.master.httpMetadataServerPort }}
+      targetPort: {{ .Values.master.httpMetadataServerPort }}

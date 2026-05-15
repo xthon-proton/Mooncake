@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?><manifest>
+    <!--    https://his.huawei.com/doc/#/page.html?service_code=hrn:his:servicemarket::service:cloudbuild&group_id=902d9d7c2cd240b892ab75d7f706568b&lang=zh_CN-->
+    <!-- remote必须name为地址https://xxxx.huawei.com中间的关键字xxxx部分以适配DSP全量源码构建统一规范, 如https://szv-open.codehub.huawei.com则name为szv-open.codehub -->
+    <!-- path 为相对于 $WORKSPACE 的相对路径 -->
+    <!-- revision处: tag构建需添加前缀refs/tags/, branch构建则不用添加 -->
+    <remote name="szv-open" fetch="https://szv-open.codehub.huawei.com/"/>
+    <remote name="codehub-y" fetch="https://codehub-y.huawei.com/"/>
+    <remote name="codehub-dg-y" fetch="https://codehub-dg-y.huawei.com" />
+    <default revision="master"/>
+
+    <!-- ============== 主仓 ============== -->
+    <!--  使用tag构建  -->
+    <project remote="szv-open" name="OpenSourceCenter/kvcache-ai/Mooncake.git" path="mooncake_artifact/src/Mooncake" revision="refs/tags/v0.3.10" groups="mooncake"/>
+
+    <!--
+        pybind11：v0.3.10 的 Mooncake 的 .gitmodules 写的是 branch=stable（滚动），stable 滚动不可复现 → manifest 中固定到 v0.3.4;
+        拉取后由 20_build_mooncake.sh 软链/拷贝到 Mooncake/extern/pybind11/，注意不要嵌套成 Mooncake/extern/pybind11/pybind11/
+    -->
+    <project remote="szv-open" name="OpenSourceCenter/pybind/pybind11.git" path="mooncake_artifact/src/pybind11" revision="refs/tags/v3.0.4" groups="mooncake"/>
+
+    <!--
+        v0.3.10 的 Mooncake 使用 v0.5.6 的 yalantinglibs，预编译安装至 /usr/local
+        后续要升级 -> v0.6.1
+    -->
+    <project remote="szv-open" name="OpenSourceCenter/alibaba/yalantinglibs.git" path="mooncake_artifact/src/yalantinglibs" revision="refs/tags/0.5.6" groups="mooncake"/>
+
+    <!-- ============== 6 个三方依赖 ============== -->
+    <project remote="szv-open" name="OpenSourceCenter/gflags/gflags.git" path="mooncake_artifact/src/deps/gflags" revision="refs/tags/v2.2.2" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/google/glog.git" path="mooncake_artifact/src/deps/glog" revision="refs/tags/v0.7.0" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/open-source-parsers/jsoncpp.git" path="mooncake_artifact/src/deps/jsoncpp" revision="refs/tags/1.9.5" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/jbeder/yaml-cpp.git" path="mooncake_artifact/src/deps/yaml-cpp" revision="refs/tags/yaml-cpp-0.7.0" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/msgpack/msgpack-c.git" path="mooncake_artifact/src/deps/msgpack-c" revision="refs/tags/cpp-7.0.0" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/Cyan4973/xxHash.git" path="mooncake_artifact/src/deps/xxHash" revision="refs/tags/v0.8.3" groups="mooncake"/>
+</manifest>
