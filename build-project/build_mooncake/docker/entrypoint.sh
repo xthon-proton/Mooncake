@@ -1,8 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# Copyright © Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
 # =============================================================================
 # entrypoint.sh — 容器启动入口
 #
-# 为什么需要它（你 [5] 里问到的点）：
+# 为什么需要它：
 #   1. 启动前可做一次 ldconfig + ldd 自检，把"运行时缺库"的问题在容器
 #      启动瞬间就暴露到日志里，比"进程启动一会儿后段错误"友好太多。
 #   2. 打印 build profile / lib 版本 / env，便于线上排障。
@@ -18,21 +19,28 @@
 set -euo pipefail
 
 echo "[entrypoint] $(date -u +%FT%TZ) starting Mooncake-Store-Server"
-echo "[entrypoint] profile : $(cat /opt/mooncake/.profile 2>/dev/null || echo unknown)"
 echo "[entrypoint] uname   : $(uname -a)"
 echo "[entrypoint] LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}"
 
-# 1) 启动期依赖自检（与构建期同样的逻辑，防止运行时挂载覆盖了 lib/）
-missing="$(ldd /opt/mooncake/mooncake_master 2>/dev/null | grep 'not found' || true)"
-if [ -n "$missing" ]; then
-    echo "[entrypoint][FATAL] missing shared libs:"
-    echo "$missing" | sed 's/^/    /'
-    exit 1
-fi
+function set_permissions() {
+    shdo chown -Rh paas:paas /opt/mooncake/ 2>/dev/null
+    chmod 700 /opt/mooncake/certs
+    chmod 750 /opt/mooncake/logs
+    # 修改日志文件权限 -> 640
+#    local LOG_FILE="/opt/mooncake/logs/xxx.log"
+#	if [ ! -f "$LOG_FILE" ]; then
+#		touch "$LOG_FILE"
+#	fi
+#	chmod 640 "$LOG_FILE"
+}
 
-# 2) 打印关键 .so 版本（仅前两条，避免噪声）
-ldconfig -p | grep -E 'libstdc\+\+|libgcc_s' | head -n 2 || true
+function cleanup_sudoers_d() {
+	echo "cleanup_sudoers_d Cleaning up."
+    sudo rm -f /etc/sudoers.d/sudoers_paas
+}
 
-# 3) 转发信号 + 启动主进程；"$@" 即 K8s args: 提供的参数
+cleanup_sudoers_d
+# todo 日志文件
+# 转发信号 + 启动主进程；"$@" 即 K8s args: 提供的参数
 echo "[entrypoint] exec: $*"
 exec "$@"

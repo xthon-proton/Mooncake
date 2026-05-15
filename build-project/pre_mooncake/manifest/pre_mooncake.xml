@@ -1,83 +1,34 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  pre_mooncake.xml
-  ====================================================================
-  阶段一源码拉取清单。工程任务按本清单把每个 <project> 拉取到对应
-  ${WORKSPACE}/<path> 目录。脚本不再做 git clone / git submodule。
+<?xml version="1.0" encoding="utf-8"?><manifest>
+    <!--    https://his.huawei.com/doc/#/page.html?service_code=hrn:his:servicemarket::service:cloudbuild&group_id=902d9d7c2cd240b892ab75d7f706568b&lang=zh_CN-->
+    <!-- remote必须name为地址https://xxxx.huawei.com中间的关键字xxxx部分以适配DSP全量源码构建统一规范, 如https://szv-open.codehub.huawei.com则name为szv-open.codehub -->
+    <!-- path 为相对于 $WORKSPACE 的相对路径 -->
+    <!-- revision处: tag构建需添加前缀refs/tags/, branch构建则不用添加 -->
+    <remote name="szv-open" fetch="https://szv-open.codehub.huawei.com/"/>
+    <remote name="codehub-y" fetch="https://codehub-y.huawei.com/"/>
+    <remote name="codehub-dg-y" fetch="https://codehub-dg-y.huawei.com" />
+    <default revision="master"/>
 
-  约定：
-    * path 相对于 ${WORKSPACE}（不是相对于 src/），与工程任务的 manifest
-      schema 对齐；本仓约定统一放在 src/ 下，故所有 path 均以 src/ 起始。
-    * 所有 revision 必须固定到 tag 或具体 commit，禁止滚动分支，
-      以保证可复现构建。
-    * etcd-cpp-apiv3 / cpprestsdk 不在源码清单中：构建环境（EulerOS 基础镜像
-      + 1_preflight.sh 的 yum 步骤）已提供其 -devel 包，无需源码编译。
-  ====================================================================
--->
-<manifest>
+    <!-- ============== 主仓 ============== -->
+    <!--  使用tag构建  -->
+    <project remote="szv-open" name="OpenSourceCenter/kvcache-ai/Mooncake.git" path="mooncake_artifact/src/Mooncake" revision="refs/tags/v0.3.10" groups="mooncake"/>
 
-  <!-- ============== 主仓 ============== -->
-  <project name="Mooncake"
-           remote="https://github.com/kvcache-ai/Mooncake.git"
-           revision="refs/tags/v0.3.10"
-           path="src/Mooncake"/>
+    <!--
+        pybind11：v0.3.10 的 Mooncake 的 .gitmodules 写的是 branch=stable（滚动），stable 滚动不可复现 → manifest 中固定到 v0.3.4;
+        拉取后由 20_build_mooncake.sh 软链/拷贝到 Mooncake/extern/pybind11/，注意不要嵌套成 Mooncake/extern/pybind11/pybind11/
+    -->
+    <project remote="szv-open" name="OpenSourceCenter/pybind/pybind11.git" path="mooncake_artifact/src/pybind11" revision="refs/tags/v3.0.4" groups="mooncake"/>
 
-  <!--
-    pybind11：v0.3.10 的 .gitmodules 写的是 branch=stable（滚动），
-    工程任务无外网，且 stable 滚动不可复现 → manifest 中固定到 v0.3.4
-    （按 #2 澄清结果）。拉取后由 3_build_mooncake.sh 软链/拷贝到
-    Mooncake/extern/pybind11/，注意不要嵌套成
-    Mooncake/extern/pybind11/pybind11/。
-  -->
-  <project name="pybind11"
-           remote="https://github.com/pybind/pybind11.git"
-           revision="refs/tags/v0.3.4"
-           path="src/pybind11"/>
+    <!--
+        v0.3.10 的 Mooncake 使用 v0.5.6 的 yalantinglibs，预编译安装至 /usr/local
+        后续要升级 -> v0.6.1
+    -->
+    <project remote="szv-open" name="OpenSourceCenter/alibaba/yalantinglibs.git" path="mooncake_artifact/src/yalantinglibs" revision="refs/tags/0.5.6" groups="mooncake"/>
 
-  <!--
-    yalantinglibs：v0.3.10 的 Mooncake 不强制版本（按 #1 澄清），
-    使用 v0.5.6。预编译装 /usr/local，供 cpp_protobuf 等下游链接。
-  -->
-  <project name="yalantinglibs"
-           remote="https://github.com/alibaba/yalantinglibs.git"
-           revision="refs/tags/v0.5.6"
-           path="src/yalantinglibs"/>
-
-  <!-- ============== 6 个三方依赖（源码编译） ============== -->
-  <project name="jsoncpp"
-           remote="https://github.com/open-source-parsers/jsoncpp.git"
-           revision="refs/tags/1.9.5"
-           path="src/deps/jsoncpp"/>
-
-  <!-- glog v0.7.0（按 #4 澄清固定） -->
-  <project name="glog"
-           remote="https://github.com/google/glog.git"
-           revision="refs/tags/v0.7.0"
-           path="src/deps/glog"/>
-
-  <project name="yaml-cpp"
-           remote="https://github.com/jbeder/yaml-cpp.git"
-           revision="refs/tags/yaml-cpp-0.7.0"
-           path="src/deps/yaml-cpp"/>
-
-  <project name="gflags"
-           remote="https://github.com/gflags/gflags.git"
-           revision="refs/tags/v2.2.2"
-           path="src/deps/gflags"/>
-
-  <project name="xxhash"
-           remote="https://github.com/Cyan4973/xxHash.git"
-           revision="refs/tags/v0.8.2"
-           path="src/deps/xxhash"/>
-
-  <!--
-    msgpack-c：mooncake_master 链接需要的 msgpack 头文件 / 库。
-    EulerOS 基础镜像未提供，须源码编译。版本占位为 c-6.0.0，如需对齐
-    内部已验证版本请在此处统一修改（脚本不应散落版本号）。
-  -->
-  <project name="msgpack-c"
-           remote="https://github.com/msgpack/msgpack-c.git"
-           revision="refs/tags/c-6.0.0"
-           path="src/deps/msgpack-c"/>
-
+    <!-- ============== 6 个三方依赖 ============== -->
+    <project remote="szv-open" name="OpenSourceCenter/gflags/gflags.git" path="mooncake_artifact/src/deps/gflags" revision="refs/tags/v2.2.2" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/google/glog.git" path="mooncake_artifact/src/deps/glog" revision="refs/tags/v0.7.0" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/open-source-parsers/jsoncpp.git" path="mooncake_artifact/src/deps/jsoncpp" revision="refs/tags/1.9.5" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/jbeder/yaml-cpp.git" path="mooncake_artifact/src/deps/yaml-cpp" revision="refs/tags/yaml-cpp-0.7.0" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/msgpack/msgpack-c.git" path="mooncake_artifact/src/deps/msgpack-c" revision="refs/tags/cpp-7.0.0" groups="mooncake"/>
+    <project remote="szv-open" name="OpenSourceCenter/Cyan4973/xxHash.git" path="mooncake_artifact/src/deps/xxHash" revision="refs/tags/v0.8.3" groups="mooncake"/>
 </manifest>

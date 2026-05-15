@@ -1,5 +1,4 @@
 apiVersion: v1
 description: mooncake_master service (Mooncake-Store-Server)
 name: mooncake_store_server
-version: "v0.1"
-appVersion: "v0.1"
+version: {{version}}

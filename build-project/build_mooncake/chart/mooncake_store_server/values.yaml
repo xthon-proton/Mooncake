@@ -1,39 +1,42 @@
 # =============================================================================
 # values.yaml — Mooncake-Store-Server
 # 仅放真正需要"按环境差异化"的配置；其余全部固化在模板里以减少误配。
+# global层级，在CNAI2.0场景下，由父chart定义，单服务不使用此字段。
 # =============================================================================
 
-global:
-  # 镜像拉取策略
-  imagePullPolicy: IfNotPresent
-  # 架构标签（仅用于 nodeSelector / 描述，不参与镜像名拼接）
-  arch: "arm_64"
-  # 命名空间（service-headless / service / sts 都使用它）
-  namespace: "mooncake"
+common:
+  app_name: mooncake-store-server
+  replicas: 1
+  namespace: kube-system
 
-image:
-  repository: mooncake-store-server
-  tag: "v0.1"
-  # 完整镜像 = ${repository}:${tag}
+kube:
+  hw_swr_repo: "registry.fusionstage.local:20202/op_svc_pom/"
+  dsp_image_tag: "27.0.110000003"
+  # 完整镜像: 需要结合 swr_repo 前缀 与 image_tag（构建相关）
+  image_name: "mooncake-store-server"
+  image_pull_policy: IfNotPresent
+  use_service_account: true
+  service_account_name: mss-sa
 
-replicaCount: 2
-
-# ----- 反亲和性开关：单节点 false；多节点强烈建议 true ---------------------
+# ----- 反亲和性开关：单节点可以配置为 false；多节点强烈建议 true ---------------------
+# 配置反亲和时，每节点至多 1 个 master pod
 podAntiAffinity:
-  enabled: false   # 多节点部署时改 true：每节点至多 1 个 master pod
+  enabled: true
+
+enabled_tls: true
 
 # ----- mooncake_master 启动参数 --------------------------------------------
 master:
-  rpcPort: 50051
-  metricsPort: 9001
-  httpMetadataServerPort: 8888
-  enableHA: true
-  enableHttpMetadataServer: true
-  clusterId: "mooncake"
-  logDir: "/tmp/"
-  alsologtostderr: true
-  # etcd 地址（替换为实际部署）
-  etcdEndpoints: "http://mooncake-etcd-svc.kube-system.svc.cluster.local:2379"
+  rpc_port: 50051
+  metrics_port: 9001
+  http_metadata_server_port: 8888
+  enable_ha: true
+  enable_http_metadata_server: true
+  cluster_id: "mooncake"
+  logDir: "/opt/mooncake/logs/"
+  also_log_to_stderr: true
+  # etcd 地址 (非安全加固场景，前缀为http)
+  etcdEndpoints: "mooncake-etcd-svc.kube-system.svc.cluster.local:2379"
   # rpc bind 策略：
   #   pod_ip   —— 推荐（POD_IP，bind 稳定）
   #   pod_fqdn —— headless service 的 FQDN
@@ -42,7 +45,7 @@ master:
   #              （默认 busybox:1.36，自带 nslookup）。如果你在 waitEtcd.image
   #              里换成了不带 nslookup 的发行版，请同步替换 wait-self-dns 的
   #              检测命令（如改用 `getent hosts` 或 `dig`）。
-  rpcAddressMode: "pod_ip"
+  rpc_address_mode: "pod_ip"
 
 # ----- 等待 etcd 就绪（可选 initContainer） --------------------------------
 waitEtcd:
@@ -51,33 +54,37 @@ waitEtcd:
   host: ""        # 例如 mooncake-etcd-svc.kube-system.svc.cluster.local
   port: 2379
 
-# ----- 探针（按 #9 澄清：主备一致，统一打 8888 / TCP） ---------------------
+# ----- 探针（主备一致，统一打 8888 / TCP） ---------------------
 probes:
   port: 8888
   readiness:
     initialDelaySeconds: 10
     periodSeconds: 5
     failureThreshold: 3
+    successThreshold: 1
+    timeoutSeconds: 5
   liveness:
     initialDelaySeconds: 60
     periodSeconds: 30
     failureThreshold: 5
+    successThreshold: 1
+    timeoutSeconds: 5
 
 # ----- 资源 -----------------------------------------------------------------
+# 按需求澄清定的规格
 resources:
   requests:
     cpu: "500m"
     memory: "512Mi"
   limits:
     cpu: "2"
-    memory: "2Gi"
+    memory: "4Gi"
 
 # ----- 容忍 -----------------------------------------------------------------
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
     effect: NoSchedule
-
-serviceAccount:
-  create: true
-  name: ""   # 留空则使用 fullname
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule

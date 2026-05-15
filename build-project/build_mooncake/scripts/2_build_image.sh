@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# Copyright © Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
 # =============================================================================
 # 2_build_image.sh — docker build + 7z 打包
 # =============================================================================
@@ -6,46 +7,57 @@ set -euo pipefail
 SCRIPT_NAME="2_build_image"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-source "$(cd "$THIS_DIR/../../lib" && pwd)/common.sh"
+source "$(cd "$STAGE_DIR/../pre_mooncake/scripts/lib" && pwd)/common.sh"
+source "$STAGE_DIR/lib/common.sh"
 
-require_env WORKSPACE IMAGE_NAME IMAGE_TAG BASE_IMAGE BUILD_PROFILE
+# 初始化 OS_ARCH, IMAGE_LABEL
+init_build_image_params
+
+# 变量声明
+: "${B_VERSION:=${SUB_VERSION}}"
+
+: "${BASE_IMAGE:=libforlayer:1.0.0}"
+: "${IMAGE_NAME:=mooncake-store-server}"
+: "${IMAGE_TAG:=${B_VERSION}}"
+
+# 变量检测
+require_env WORKSPACE BASE_IMAGE SUB_VERSION IMAGE_NAME OS_ARCH IMAGE_LABEL
 
 CTX_DIR="${WORKSPACE}/build-context"
 [[ -d "$CTX_DIR" ]] || die "build context 缺失：$CTX_DIR（请先执行 1_pull_artifact.sh）"
 
-GIT_SHA="$(git -C "$(dirname "$STAGE_DIR")/.." rev-parse --short=8 HEAD 2>/dev/null || echo unknown)"
 FULL_TAG="${IMAGE_NAME}:${IMAGE_TAG}"
-SHA_TAG="${IMAGE_NAME}:${IMAGE_TAG}-${GIT_SHA}"
-LATEST_TAG="${IMAGE_NAME}:latest"
 
-log_info "docker build (BUILD_PROFILE=${BUILD_PROFILE}) → $FULL_TAG / $SHA_TAG / $LATEST_TAG"
+log_info "docker build $FULL_TAG"
 
+# --- BUILD image ---
 # 必须 cd 到 build context 目录再 docker build —— 这正是 [5] 你的疑问：
 # COPY 指令的源路径是相对 build context 的，所以构建前必须切换工作目录。
+# 传递参数, 替换 基础镜像, label from
 cd "$CTX_DIR"
+docker version
 docker build \
     --progress=plain \
     --build-arg BASE_IMAGE="${BASE_IMAGE}" \
-    --build-arg BUILD_PROFILE="${BUILD_PROFILE}" \
+    --build-arg BASE_IMAGE_LABEL="${IMAGE_LABEL}" \
     -t "$FULL_TAG" \
-    -t "$SHA_TAG" \
-    -t "$LATEST_TAG" \
     .
 
-# ---- 导出镜像为 tar，再用 7z 打包 -----------------------------------------
-mkdir -p "${DIST_DIR}"
-IMAGE_TAR="${DIST_DIR}/${IMAGE_NAME}_${IMAGE_TAG}_${GIT_SHA}.tar"
-log_info "docker save → $IMAGE_TAR"
-docker save -o "$IMAGE_TAR" "$FULL_TAG" "$SHA_TAG"
+# --- 镜像瘦身，并导出 tar 包 ---
+# 需要基础镜像名，目标镜像名，tar包名，保存路径'
+# tar包名结构：mooncake-store-server-{B_VERSION}-{OS_ARCH}
+IMAGE_TAR_NAME="${IMAGE_NAME}-${IMAGE_TAG}-${OS_ARCH}"
+TAR_SAVE_PATH="${DIST_DIR}/images"
 
-PKG_NAME="V0.1_Images_EulerOS-Aarch64_Docker-MooncakeStoreServer-Any.7z"
-PKG_PATH="${DIST_DIR}/${PKG_NAME}"
-rm -f "$PKG_PATH"
+# 执行完毕后, tar文件位于: ${DIST_DIR}/images/${IMAGE_TAR_NAME}
+sh "${STAGE_DIR}"/lib/save_image_slim.sh -b "${BASE_IMAGE}" -a "${FULL_TAG}" -r "${IMAGE_TAR_NAME}" -p "${TAR_SAVE_PATH}"
 
-command -v 7z >/dev/null 2>&1 || die "7z 未安装（yum install -y p7zip）"
-( cd "$DIST_DIR" && 7z a -mx=5 "$PKG_NAME" "$(basename "$IMAGE_TAR")" )
-log_info "镜像 7z 已生成：$PKG_PATH"
-ls -lh "$PKG_PATH"
-
-# 中间 tar 可保留（便于人工 docker load 验证）；如需精简可解开下面注释：
-# rm -f "$IMAGE_TAR"
+# 输出 meta-info.yaml
+cat <<EOF > "${DIST_DIR}"/images/meta-info.yaml
+images:
+  - pkg: ${IMAGE_TAR_NAME}
+    tag: ${FULL_TAG}
+    dependency: ${DEPENDENCY_IMAGE_NAME}:${B_VERSION}
+EOF
+ls -al "${DIST_DIR}"/images/meta-info.yaml
+log_info "Success to save mooncake-store-server image -> ${DIST_DIR}/images/${IMAGE_TAR_NAME}"

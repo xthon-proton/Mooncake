@@ -1,16 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# Copyright © Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
 # =============================================================================
-# build-project/lib/common.sh
+# pre_mooncake/scripts/lib/common.sh
 #
-# 阶段一（pre_mooncake）与阶段二（build_mooncake）共享的公共函数库。
-# 所有脚本统一使用相同深度的相对路径 source 它，便于复制粘贴：
-#
-#     source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
-#
-# 因为两个阶段的脚本都位于 build-project/<stage>/scripts/<n>_xxx.sh，
-# `../../lib` 总能正确解析到 build-project/lib/。
-#
-# 内容：
+# 阶段一全部脚本（00_..40_*.sh）以及阶段二 build-mooncake-image/scripts/* 通过
+#     source "$(dirname "$0")/lib/common.sh"
+# 引入的公共函数库。包含：
 #   * 日志：log_info / log_warn / log_error / die
 #   * 环境校验：require_env  （多个变量名，任一未定义/为空则 die）
 #   * Go 版本校验：check_go_version  （`go env GOVERSION` vs $GO_MIN_VERSION）
@@ -95,6 +90,15 @@ check_go_version() {
     log_info "go 版本检查通过：当前 $current >= 要求 $min"
 }
 
+print_dirs() {
+      log_info "=== 构建目录配置 ==="
+      log_info "SRC_DIR:   ${SRC_DIR:-<未设置>}"
+      log_info "BUILD_DIR: ${BUILD_DIR:-<未设置>}"
+      log_info "TMP_DIR:   ${TMP_DIR:-<未设置>}"
+      log_info "DIST_DIR:  ${DIST_DIR:-<未设置>}"
+      log_info "==================="
+}
+
 # ---- 派生路径默认值 --------------------------------------------------------
 # WORKSPACE 必须由调用方（CI env / 本地 export）提供；其余路径若未提供则按
 # 约定派生，统一所有脚本的目录布局：
@@ -104,10 +108,12 @@ check_go_version() {
 #       ├── tmp/        打包临时目录
 #       └── dist/       最终制品输出目录
 if [[ -n "${WORKSPACE:-}" ]]; then
-    : "${SRC_DIR:=${WORKSPACE}/src}"
-    : "${BUILD_DIR:=${WORKSPACE}/build}"
+    : "${SRC_DIR:=${WORKSPACE}/mooncake_artifact/src}"
+    : "${BUILD_DIR:=${WORKSPACE}/mooncake_artifact/build}"
     : "${TMP_DIR:=${WORKSPACE}/tmp}"
     : "${DIST_DIR:=${WORKSPACE}/dist}"
     mkdir -p "$BUILD_DIR" "$TMP_DIR" "$DIST_DIR"
     export SRC_DIR BUILD_DIR TMP_DIR DIST_DIR
 fi
+
+print_dirs

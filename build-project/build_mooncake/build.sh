@@ -1,12 +1,73 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# Copyright © Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
 # =============================================================================
-# 阶段二入口（本地穿刺）；工程任务模式下由 ci/build_mooncake_arm.yml
 # 按 step 调用各 scripts/*.sh。
 # =============================================================================
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-bash "$SCRIPT_DIR/scripts/1_pull_artifact.sh"
-bash "$SCRIPT_DIR/scripts/2_build_image.sh"
-bash "$SCRIPT_DIR/scripts/3_build_chart.sh"
-bash "$SCRIPT_DIR/scripts/4_push_product.sh"
+# 格式化时间：毫秒转人类可读
+format_duration() {
+    local ms=$1
+    if [ "$ms" -lt 1000 ]; then
+        echo "${ms}ms"
+    else
+        local sec=$((ms / 1000))
+        local rem_ms=$((ms % 1000))
+        local min=$((sec / 60))
+        local rem_sec=$((sec % 60))
+
+        if [ "$min" -gt 0 ]; then
+            printf "%dmin %dsec %dms\n" "$min" "$rem_sec" "$rem_ms"
+        else
+            printf "%dsec %dms\n" "$rem_sec" "$rem_ms"
+        fi
+    fi
+}
+
+# 增强型执行函数
+# 使用方式: run_task "描述" 命令 参数1 参数2...
+run_task() {
+    local desc="$1"
+    shift # 移除第一个参数，剩余部分为实际执行的命令
+
+    echo "[START] $desc"
+
+    # 获取纳秒级时间戳并转换为毫秒 (兼容性处理)
+    # macOS 默认 date 不支持 %N，若在 Mac 上运行需安装 coreutils (gnudate)
+    local start_ns=$(date +%s%N)
+
+    # 直接执行命令数组，避免 eval 风险
+    "$@"
+    local exit_code=$?
+
+    local end_ns=$(date +%s%N)
+
+    # 计算耗时 (ms)
+    # 处理部分系统不支持 %N 导致结果非数字的情况
+    local duration_ms=0
+    if [[ "$start_ns" =~ ^[0-9]+$ ]] && [[ "$end_ns" =~ ^[0-9]+$ ]]; then
+        duration_ms=$(( (end_ns - start_ns) / 1000000 ))
+    fi
+
+    local time_str=$(format_duration $duration_ms)
+
+    if [ $exit_code -eq 0 ]; then
+        printf "[DONE] [%-12s] Success: %s\n" "$time_str" "$desc"
+    else
+        printf "[FAIL] [%-12s] Error(Code:%d): %s\n" "$time_str" "$exit_code" "$desc"
+    fi
+    echo "------------------------------------------------"
+}
+
+echo "=== 开始镜像, chart包构建流程 ==="
+
+run_task "拉取制品" bash "${SCRIPT_DIR}/scripts/1_pull_artifact.sh"
+
+run_task "构建镜像 (Build Image)" bash "${SCRIPT_DIR}/scripts/2_build_image.sh"
+
+run_task "构建chart包 (Build Chart Package)" bash "${SCRIPT_DIR}/scripts/3_build_chart.sh"
+
+run_task "推包准备流程" bash "${SCRIPT_DIR}/scripts/4_push_product.sh"
+
+echo "=== 镜像, chart包构建结束 ==="

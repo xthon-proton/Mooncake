@@ -1,23 +1,29 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# Copyright © Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
 # =============================================================================
 # 3_build_mooncake.sh — 编译 mooncake_master
 #
 # 步骤：
 #   1) 把 manifest 拉下来的 pybind11 源码"放置"到 Mooncake/extern/pybind11/
-#      —— 注意不要嵌套成 .../pybind11/pybind11/（按 #2 澄清明确强调）。
-#   2) cmake 配置（与 [2.5] 完全一致）。
+#      —— 注意不要嵌套成 .../pybind11/pybind11/
+#   2) cmake 配置（与 穿刺时的 完全一致）。
 #   3) make mooncake_master + make install。
 #   4) 校验产物 + ldd 缺失检查。
 # =============================================================================
 set -euo pipefail
 SCRIPT_NAME="3_build_mooncake"
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
+source "$(dirname "$0")/lib/common.sh"
 
-require_env SRC_DIR BUILD_DIR GCC_TOOLCHAIN_PREFIX
-export PATH="${GCC_TOOLCHAIN_PREFIX}/bin:$PATH"
-export LD_LIBRARY_PATH="${GCC_TOOLCHAIN_PREFIX}/lib64:/usr/local/lib:/usr/local/lib64:${LD_LIBRARY_PATH:-}"
-export CC="${GCC_TOOLCHAIN_PREFIX}/bin/gcc"
-export CXX="${GCC_TOOLCHAIN_PREFIX}/bin/g++"
+require_env SRC_DIR BUILD_DIR GCC_HOME_12_3
+
+export PATH="${GCC_HOME_12_3}/bin:$PATH"
+export LD_LIBRARY_PATH="${GCC_HOME_12_3}/lib64:/usr/local/lib:/usr/local/lib64:${LD_LIBRARY_PATH:-}"
+export CC="${GCC_HOME_12_3}/bin/gcc"
+export CXX="${GCC_HOME_12_3}/bin/g++"
+export GOPROXY=https://cmc.centralrepo.rnd.huawei.com/artifactory/go-central-repo/,https://cmc.centralrepo.rnd.huawei.com/artifactory/product_go/
+
+SUDO="sudo"
+$SUDO -v || die "需要 root 权限执行 make，请检查 sudo 配置"
 
 MOONCAKE_SRC="${SRC_DIR}/Mooncake"
 PYBIND_SRC="${SRC_DIR}/pybind11"
@@ -40,11 +46,14 @@ log_info "pybind11 放置 OK：$(ls "$PYBIND_DEST" | head -n5 | tr '\n' ' ')..."
 # ---- 2) cmake -------------------------------------------------------------
 MK_BUILD="${MOONCAKE_SRC}/build"
 log_info "清理旧构建目录：$MK_BUILD"
+# todo 如果cmake使用sudo执行，则产物为root属主, rm时需要提权
 rm -rf "$MK_BUILD"
 mkdir -p "$MK_BUILD"
 cd "$MK_BUILD"
 
-# 严格按 [2.5] 的 cmake 选项
+# 严格按 穿刺 的 cmake 选项
+# todo 还需要考虑 -DWITH_EP是否影响大EP场景下，master与mooncake_client的互通？
+# 忽略部分警告
 cmake .. \
     -DWITH_STORE=ON \
     -DSTORE_USE_ETCD=ON \
@@ -55,11 +64,14 @@ cmake .. \
     -DBUILD_EXAMPLES=OFF \
     -DWITH_P2P_STORE=OFF \
     -DWITH_EP=OFF \
+	-DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized -Wno-reorder" \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 # ---- 3) make + install ----------------------------------------------------
-make mooncake_master -j"$(nproc)"
-make install
+# 构建镜像执行时 make -j 10 可能被终止, 将 Parallel jobs 设置为2，解决C++编译中cc1plus进程被终止问题
+$SUDO env PATH="$PATH" GOPROXY="$GOPROXY" LD_LIBRARY_PATH="LD_LIBRARY_PATH" make mooncake_master -j2
+# 涉及 go 的使用, 则需要保留环境变量, 否则会报 command not found
+$SUDO env PATH="$PATH" GOPROXY="$GOPROXY" LD_LIBRARY_PATH="LD_LIBRARY_PATH" make install
 
 # ---- 4) 校验 --------------------------------------------------------------
 BIN=/usr/local/bin/mooncake_master

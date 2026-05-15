@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# Copyright © Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
 # =============================================================================
 # 3_build_chart.sh — helm package + 7z 打包
 #
@@ -14,12 +15,20 @@ set -euo pipefail
 SCRIPT_NAME="3_build_chart"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-source "$(cd "$THIS_DIR/../../lib" && pwd)/common.sh"
+source "$(cd "$STAGE_DIR/../pre_mooncake/scripts/lib" && pwd)/common.sh"
 
-require_env WORKSPACE CHART_VERSION
+# 变量声明
+: "${B_VERSION:=27.0.0}"
+: "${CHART_VERSION:=${B_VERSION}}"
+
+require_env WORKSPACE B_VERSION CHART_VERSION
 
 CHART_SRC="${STAGE_DIR}/chart/mooncake_store_server"
 [[ -d "$CHART_SRC" ]] || die "chart 源不存在：$CHART_SRC"
+
+# 填充 version <- B_VERSION
+sed -i "s|{{version}}|${CHART_VERSION}|g" "${CHART_SRC}"/Chart.yaml
+sed -i "s|{{version}}|${CHART_VERSION}|g" "${CHART_SRC}"/values.yaml
 
 command -v helm >/dev/null 2>&1 || die "helm 未安装（构建机请预装 helm v3）"
 
@@ -29,20 +38,16 @@ rm -rf "$CHART_OUT" && mkdir -p "$CHART_OUT"
 log_info "helm lint"
 helm lint "$CHART_SRC"
 
-log_info "helm package → $CHART_OUT"
+TGZ_FILE="mooncake_store_server-${CHART_VERSION}.tgz"
+log_info "helm package → ${CHART_OUT}/${TGZ_FILE}"
 helm package "$CHART_SRC" --version "${CHART_VERSION}" --app-version "${CHART_VERSION}" -d "$CHART_OUT"
+# 预期 mooncake_store_server-27.0.0.tgz
 
-TGZ_FILE="$(ls "$CHART_OUT"/*.tgz | head -n1)"
-[[ -f "$TGZ_FILE" ]] || die "helm package 未产出 tgz"
-log_info "chart tgz: $TGZ_FILE"
 
-# 7z 包名固定（按 #10 + [4] 约定）
-PKG_NAME="V0.1_Chart_Any_Docker-MooncakeStoreServer-Any.7z"
-PKG_PATH="${DIST_DIR}/${PKG_NAME}"
-rm -f "$PKG_PATH"
-mkdir -p "$DIST_DIR"
+[[ -f "${CHART_OUT}/${TGZ_FILE}" ]] || die "helm package 未产出 tgz"
+log_info "Success to build mooncake_store_server chart tgz package:  ${CHART_OUT}/${TGZ_FILE}"
 
-command -v 7z >/dev/null 2>&1 || die "7z 未安装（yum install -y p7zip）"
-( cd "$CHART_OUT" && 7z a -mx=5 "$PKG_PATH" "$(basename "$TGZ_FILE")" )
-log_info "chart 7z 已生成：$PKG_PATH"
-ls -lh "$PKG_PATH"
+[ ! -d "${DIST_DIR}/charts" ] && mkdir -p "${DIST_DIR}/charts"
+cp "${CHART_OUT}/${TGZ_FILE}" "${DIST_DIR}/charts/"
+log_info "cp ${TGZ_FILE} -> ${DIST_DIR}/charts/${TGZ_FILE}"
+ls -lh "${DIST_DIR}/charts/${TGZ_FILE}"
