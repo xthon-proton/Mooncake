@@ -16,22 +16,27 @@
 #   * 不要在这里做"业务逻辑"；只做"诊断 + 转发"；
 #   * exec 必须是最后一行。
 # =============================================================================
-set -euo pipefail
+set -euox pipefail
 
 echo "[entrypoint] $(date -u +%FT%TZ) starting Mooncake-Store-Server"
 echo "[entrypoint] uname   : $(uname -a)"
 echo "[entrypoint] LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}"
 
 function set_permissions() {
-    shdo chown -Rh paas:paas /opt/mooncake/ 2>/dev/null
+	echo "start to set permissions......"
+    sudo chown -Rh paas:paas /opt/mooncake/bin
+    sudo chown -Rh paas:paas /opt/mooncake/lib
+    sudo chown -Rh paas:paas /opt/mooncake/logs
+    sudo chown paas:paas /opt/mooncake/certs
+
     chmod 700 /opt/mooncake/certs
     chmod 750 /opt/mooncake/logs
     # 修改日志文件权限 -> 640
-#    local LOG_FILE="/opt/mooncake/logs/xxx.log"
-#	if [ ! -f "$LOG_FILE" ]; then
-#		touch "$LOG_FILE"
-#	fi
-#	chmod 640 "$LOG_FILE"
+    local LOG_FILE="/opt/mooncake/logs/mooncake_store_server.log"
+	if [ ! -f "$LOG_FILE" ]; then
+		touch "$LOG_FILE"
+	fi
+	chmod 640 "$LOG_FILE"
 }
 
 function cleanup_sudoers_d() {
@@ -39,6 +44,7 @@ function cleanup_sudoers_d() {
     sudo rm -f /etc/sudoers.d/sudoers_paas
 }
 
+set_permissions
 cleanup_sudoers_d
 # todo 日志文件
 # 转发信号 + 启动主进程；"$@" 即 K8s args: 提供的参数

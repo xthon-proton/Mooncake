@@ -15,6 +15,8 @@ set -euo pipefail
 SCRIPT_NAME="4_collect_artifact"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
+init_build_image_params
+
 SUDO="sudo"
 $SUDO -v || die "需要 root 权限执行采集.so文件, mooncake_master的操作，请检查 sudo 配置"
 
@@ -92,8 +94,7 @@ EOF
 log_info "MANIFEST.txt 已生成"
 
 # ---- 7) 打 tar.gz ---------------------------------------------------------
-# todo 先以 arm 架构为例子打样
-ARTIFACT="mooncake-master_${MOONCAKE_VERSION}_euleros-aarch64_${MOONCAKE_SHA}.tar.gz"
+ARTIFACT="mooncake-store-server_${MOONCAKE_VERSION}_${OS_TYPE}_${ARCH_STR}_${MOONCAKE_SHA}.tar.gz"
 tar -C "$TMP_DIR" -czf "${DIST_DIR}/${ARTIFACT}" mooncake/
 log_info "制品已生成：${DIST_DIR}/${ARTIFACT}"
 ls -lh "${DIST_DIR}/${ARTIFACT}"

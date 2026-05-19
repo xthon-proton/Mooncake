@@ -7,14 +7,14 @@ set -euo pipefail
 SCRIPT_NAME="2_build_image"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-# 跨阶段唯一公共函数库（含 init_build_image_params）
+# 跨阶段唯一公共函数库（Mooncake-build/lib/common.sh, 含 init_build_image_params）
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 # 初始化 OS_ARCH, IMAGE_LABEL
 init_build_image_params
 
 # 变量声明
-: "${B_VERSION:=${SUB_VERSION}}"
+: "${B_VERSION:=1.0.00000001}"
 
 : "${BASE_IMAGE:=libforlayer:1.0.0}"
 : "${IMAGE_NAME:=mooncake-store-server}"

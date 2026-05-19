@@ -88,11 +88,12 @@ cmake_build msgpack-c deps/msgpack-c \
     -DMSGPACK_BUILD_EXAMPLES=OFF
 
 # ---- 7. yalantinglibs（按 #1：v0.5.6） ------------------------------------
-# 后续升级 -> v0.6.1，需要增加构建参数：-DYLT_ENABLE_SSL=ON
+# 后续因安全加固需要, 升级 -> v0.6.1，需要增加构建参数：-DYLT_ENABLE_SSL=ON
 cmake_build yalantinglibs yalantinglibs \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_BENCHMARK=OFF \
-    -DBUILD_UNIT_TESTS=OFF
+    -DBUILD_UNIT_TESTS=OFF \
+    -DYLT_ENABLE_SSL=ON
 
 $SUDO ldconfig "${PREFIX}/lib" "${PREFIX}/lib64" || true
 log_info "三方依赖全部编译并安装完成"

@@ -12,6 +12,7 @@
 # =============================================================================
 set -euo pipefail
 SCRIPT_NAME="3_build_mooncake"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 require_env SRC_DIR BUILD_DIR GCC_HOME_12_3
@@ -43,19 +44,33 @@ cp -a "${PYBIND_SRC}/." "${PYBIND_DEST}/"
     || die "pybind11 放置后 CMakeLists.txt 缺失；请检查 manifest 拉取 dest 是否正确（可能嵌套）"
 log_info "pybind11 放置 OK：$(ls "$PYBIND_DEST" | head -n5 | tr '\n' ' ')..."
 
+# 修改go mod replace
+GO_BUILD_DIR="${SRC_DIR}/Mooncake/mooncake-common/etcd"
+LOCAL_GO_DEPS_PATH="${SRC_DIR}/godeps"
+
+cd "${GO_BUILD_DIR}"
+go mod edit -replace code.huawei.com/fusionstage/cbb_adapt="${LOCAL_GO_DEPS_PATH}/cbb_adapt"
+go mod edit -replace code.huawei.com/kms="${LOCAL_GO_DEPS_PATH}/KmsGoSdk"
+go mod edit -replace go.etcd.io/etcd/api/v3="${LOCAL_GO_DEPS_PATH}/etcd/api"
+go mod edit -replace go.etcd.io/etcd/client/pkg/v3="${LOCAL_GO_DEPS_PATH}/etcd/client/pkg"
+go mod edit -replace go.etcd.io/etcd/client/v3="${LOCAL_GO_DEPS_PATH}/etcd/client/v3"
+
 # ---- 2) cmake -------------------------------------------------------------
 MK_BUILD="${MOONCAKE_SRC}/build"
 log_info "清理旧构建目录：$MK_BUILD"
-# todo 如果cmake使用sudo执行，则产物为root属主, rm时需要提权
-rm -rf "$MK_BUILD"
+# 如果cmake使用sudo执行，则产物为root属主, rm时需要提权
+$SUDO rm -rf "$MK_BUILD"
 mkdir -p "$MK_BUILD"
 cd "$MK_BUILD"
 
 # 严格按 穿刺 的 cmake 选项
 # todo 还需要考虑 -DWITH_EP是否影响大EP场景下，master与mooncake_client的互通？
-# 忽略部分警告
+# 忽略部分警告 -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized -Wno-reorder"
+# 因安全加固需要，yalantinglibs 版本升级 -> v0.6.1, 配合新增构建参数：-DYLT_ENABLE_SSL=ON
+# transfer_engine支持启用etcd作为metadata server, 增加 -DUSE_ETCD=ON
 cmake .. \
     -DWITH_STORE=ON \
+    -DUSE_ETCD=ON \
     -DSTORE_USE_ETCD=ON \
     -DWITH_TE=ON \
     -DUSE_HTTP=ON \
@@ -65,7 +80,8 @@ cmake .. \
     -DWITH_P2P_STORE=OFF \
     -DWITH_EP=OFF \
 	-DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized -Wno-reorder" \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DYLT_ENABLE_SSL=ON
 
 # ---- 3) make + install ----------------------------------------------------
 # 构建镜像执行时 make -j 10 可能被终止, 将 Parallel jobs 设置为2，解决C++编译中cc1plus进程被终止问题

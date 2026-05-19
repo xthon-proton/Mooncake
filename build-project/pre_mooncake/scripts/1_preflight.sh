@@ -17,11 +17,13 @@ set -euo pipefail
 SCRIPT_NAME="1_preflight"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
+init_build_image_params
+
 # 设置部分参数默认值
 : "${GO_MIN_VERSION:=1.23.7}"
 : "${GCC_HOME_12_3:=/usr/local/bin}"
 
-require_env WORKSPACE GO_MIN_VERSION GCC_HOME_12_3
+require_env WORKSPACE GO_MIN_VERSION GCC_HOME_12_3 cmc_type
 
 log_info "=== env 变量 ==="
 log_info "WORKSPACE:      ${WORKSPACE}"
@@ -38,34 +40,79 @@ $SUDO -v || die "需要 root 权限操作 yum 源，请检查 sudo 配置"
 
 # 添加临时 yum 源（备份原源 → 添加新源 → 刷新缓存）
 add_yum_repo() {
-    $SUDO mkdir -p /repo_bak \
-    && $SUDO cp -r /etc/yum.repos.d/ /repo_bak/
+	# 备份原有的 repo 文件
+    $SUDO mkdir -p /repo_bak && $SUDO cp -r /etc/yum.repos.d/ /repo_bak/
 
-    # 根据 build_image_arm 变量选择不同的 yum 源配置
-    if [[ "${build_image_arm}" == "kweecr04.his.huawei.com:80/ecr-build-arm-gzkunpeng/gde_27.0_kylinos_sp3_arm:22.0" ]]; then
-        $SUDO tee /etc/yum.repos.d/base.repo >/dev/null <<'REPO_EOF'
+    case "${cmc_type:-}" in
+    	ARM)
+    		# arm 210
+    		$SUDO tee /etc/yum.repos.d/base.repo >/dev/null <<'REPO_EOF'
 [base]
 name=centos- - Base
 baseurl=http://ncedevtools.rnd.huawei.com/kylin_10_sp3_2403_4GB_yum_arm/
 gpgcheck=0
 enabled=1
 REPO_EOF
-    else
-        $SUDO tee /etc/yum.repos.d/base.repo >/dev/null <<'REPO_EOF'
+			# arm 212使用别的源
+
+			$SUDO yum clean all && $SUDO yum makecache
+			;;
+		X86)
+			$SUDO tee /etc/yum.repos.d/base.repo >/dev/null <<'REPO_EOF'
 [base]
-name=local_base
-baseurl=http://buildtools.szv.dragon.tools.huawei.com/repo/EulerOS/V200R012C00SPC100B150/
+name=local_baes
+baseurl=http://bmc.buildtools.inhuawei.com/buildtools/repo/EulerOS/V200R012C00SPC100B150/
 gpgcheck=0
 enabled=1
 
 [updates0]
-name=local_base
-baseurl=http://buildtools.szv.dragon.tools.huawei.com/repo/devel_tools/EulerOS/V200R012C00SPC100B150/devel_tools/
+name=local_baes
+baseurl=http://bmc.buildtools.inhuawei.com/buildtools/repo/devel_tools/EulerOS/V200R012C00SPC100B150/devel_tools/
+gpgcheck=0
+enabled=1
+
+[updates1]
+name=local_baes
+baseurl=http://bmc.buildtools.inhuawei.com/buildtools/repo/devel_tools/EulerOS/V200R012C00SPC100B150_i686/EulerOS_Server_V200R012C00SPC100B150_i686/
 gpgcheck=0
 enabled=1
 REPO_EOF
-    fi
-    $SUDO yum clean all && $SUDO yum makecache
+			$SUDO yum clean all && $SUDO yum makecache
+			;;
+		SUSE)
+			$SUDO zypper rr suse12-sp5-base suse12-sp5-sdk suse12-sp5-devel 2>/dev/null || true
+			$SUDO tee /etc/zypp/repos.d/suse12-sp5-base.repo > /dev/null <<'EOF'
+[suse12-sp5-base]
+name=SUSE 12 SP5 Base
+baseurl=http://bmc.buildtools.inhuawei.com/buildtools/repo/Suse12_Sp5/
+gpgcheck=0
+repo_gpgcheck=0
+pkg_gpgcheck=1
+enabled=1
+EOF
+			$SUDO tee /etc/zypp/repos.d/suse12-sp5-sdk.repo > /dev/null <<'EOF'
+[suse12-sp5-sdk]
+name=SUSE 12 SP5 SDK
+baseurl=http://bmc.buildtools.inhuawei.com/buildtools/repo/Suse12_SP5_SDK/
+gpgcheck=0
+repo_gpgcheck=0
+pkg_gpgcheck=1
+enabled=1
+EOF
+			$SUDO tee /etc/zypp/repos.d/suse12-sp5-devel.repo > /dev/null <<'EOF'
+[suse12-sp5-devel]
+name=SUSE 12 SP5 Devel Tools
+baseurl=http://bmc.buildtools.inhuawei.com/buildtools/repo/devel_tools/SUSE/12SP5/devel_tools/
+gpgcheck=0
+repo_gpgcheck=0
+pkg_gpgcheck=1
+enabled=1
+EOF
+			$SUDO zypper refresh
+            $SUDO zypper install -y awk
+            $SUDO zypper install -y --oldpackage libncurses5-5.9-64.1 libncurses6-5.9-64.1
+			;;
+    esac
 }
 
 # 清理临时 yum 源（恢复原源 → 删除备份）
@@ -76,13 +123,14 @@ cleanup_yum_repo() {
 
 # ---- yum 依赖（best-effort，已存在则跳过）---------------------------------
 # 不检查 make, cmake 等基础工具包
+# todo 后续要支持 SUSE zypper 安装相应依赖包
 YUM_PKGS=(numactl-devel openssl-devel libcurl-devel
           zstd-devel rdma-core-devel boost-devel
           python3-devel)
 if command -v yum >/dev/null 2>&1; then
     add_yum_repo
     log_info "尝试安装 yum 依赖（已装则跳过）"
-    $SUDO yum install -y "${YUM_PKGS[@]}" || log_warn "yum 安装出现错误，请人工核对"
+    $SUDO yum install -y "${YUM_PKGS[@]}" --skip-broken || log_warn "yum 安装出现错误，请人工核对"
     cleanup_yum_repo
 else
     log_warn "yum 不可用，跳过依赖安装（请确保 ${YUM_PKGS[*]} 已就绪）"

@@ -18,7 +18,7 @@ STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 # 变量声明
-: "${B_VERSION:=27.0.0}"
+: "${B_VERSION:=1.0.00000001}"
 : "${CHART_VERSION:=${B_VERSION}}"
 
 require_env WORKSPACE B_VERSION CHART_VERSION

@@ -11,10 +11,10 @@ common:
 
 kube:
   hw_swr_repo: "registry.fusionstage.local:20202/op_svc_pom/"
-  dsp_image_tag: "27.0.110000003"
+  dsp_image_tag: "{{version}}"
   # 完整镜像: 需要结合 swr_repo 前缀 与 image_tag（构建相关）
   image_name: "mooncake-store-server"
-  image_pull_policy: IfNotPresent
+  image_pull_policy: "Always"
   use_service_account: true
   service_account_name: mss-sa
 
@@ -23,18 +23,16 @@ kube:
 podAntiAffinity:
   enabled: true
 
-enabled_tls: true
-
 # ----- mooncake_master 启动参数 --------------------------------------------
 master:
+  enabled_tls: true
   rpc_port: 50051
   metrics_port: 9001
   http_metadata_server_port: 8888
   enable_ha: true
   enable_http_metadata_server: true
   cluster_id: "mooncake"
-  logDir: "/opt/mooncake/logs/"
-  also_log_to_stderr: true
+  logtostderr: true
   # etcd 地址 (非安全加固场景，前缀为http)
   etcdEndpoints: "mooncake-etcd-svc.kube-system.svc.cluster.local:2379"
   # rpc bind 策略：
@@ -50,8 +48,6 @@ master:
 # ----- 等待 etcd 就绪（可选 initContainer） --------------------------------
 waitEtcd:
   enabled: false
-  image: "busybox:1.36"
-  host: ""        # 例如 mooncake-etcd-svc.kube-system.svc.cluster.local
   port: 2379
 
 # ----- 探针（主备一致，统一打 8888 / TCP） ---------------------

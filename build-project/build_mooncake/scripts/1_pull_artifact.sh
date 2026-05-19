@@ -18,23 +18,18 @@ SCRIPT_NAME="1_pull_artifact"
 
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-# 跨阶段唯一公共函数库（build-project/lib/common.sh）
+# 跨阶段唯一公共函数库（Mooncake-build/lib/common.sh）
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 # 设置参数默认值
 : "${MOONCAKE_VERSION:=v0.3.10}"
-: "${ARTIFACT_REPO_BASE:=${DIST_DIR}}"
 
-require_env WORKSPACE MOONCAKE_VERSION ARTIFACT_REPO_BASE DIST_DIR
-
-ARTIFACT_FILE="$(ls "$ARTIFACT_REPO_BASE"/*.gz | head -n1)"
+# ENV_PIPELINE_TASKNAME: 构建任务job名, 如 mooncake_package_arm
+# ENV_SERVICE_NAME: 构建服务名, 如 mooncake
+require_env WORKSPACE MOONCAKE_VERSION
 
 CTX_DIR="${WORKSPACE}/build-context"
 rm -rf "$CTX_DIR" && mkdir -p "$CTX_DIR"
-
-# todo
-LOCAL_TGZ=${ARTIFACT_FILE}
-
 
 # ---- 解析待下载的制品文件名 -----------------------------------------------
 # 优先使用工程任务注入的 ARTIFACT_FILE；否则从制品仓的 LATEST 文件读取。
@@ -43,15 +38,17 @@ LOCAL_TGZ=${ARTIFACT_FILE}
 # 解压到 TMP_EXTRACT="${WORKSPACE}/tmp/extract"
 
 
-# ---- 下载（mock） ---------------------------------------------------------
-if [[ -f "$LOCAL_TGZ" ]]; then
-    log_info "本地已存在 $LOCAL_TGZ，跳过下载"
-else
-    log_info "[MOCK] 下载：$ARTIFACT_URL → $LOCAL_TGZ"
-    log_warn "请将下面这一行替换为公司内部制品仓客户端命令："
-    echo "  # curl -fSL -u \"\${REPO_USER}:\${REPO_TOKEN}\" -o \"$LOCAL_TGZ\" \"$ARTIFACT_URL\""
-    die "未实现真实下载（mock 状态）。请实现下载或将制品手工放到 $LOCAL_TGZ 后重试。"
-fi
+# ---- 下载制品文件 ---------------------------------------------------------
+TARGET_ARTIFACT_DOWNLOAD_PATH="${TMP_DIR}/artifact/"
+[[ ! -d "${TARGET_ARTIFACT_DOWNLOAD_PATH}" ]] && mkdir -p "${TARGET_ARTIFACT_DOWNLOAD_PATH}"
+log_info "[PROCESSING] 下载 → ${TARGET_ARTIFACT_DOWNLOAD_PATH}"
+# 分层构建时, ENV_PIPELINE_TASKNAME, ENV_SERVICE_NAME 变量会带
+bash "${WORKSPACE}/${ENV_PIPELINE_TASKNAME}/${ENV_SERVICE_NAME}/pre_mooncake/conan/config_conan.sh"
+conan install "${WORKSPACE}/${ENV_PIPELINE_TASKNAME}/${ENV_SERVICE_NAME}/pre_mooncake/conan/conanfile.txt" -g deploy -if "${TARGET_ARTIFACT_DOWNLOAD_PATH}"
+# 制品会包含/mooncake目录, 一起下载至目标路径, 如：/usr1/tmp/artifact/mooncake/mooncake-store-server_v0.3.10_EulerOS_Aarch64_fed27e52.tar.gz
+LOCAL_TGZ="$(ls "${TARGET_ARTIFACT_DOWNLOAD_PATH}"/mooncake/*.gz | head -n1)"
+cd "${TARGET_ARTIFACT_DOWNLOAD_PATH}"
+ls -al
 
 # ---- 解压 + 组装 build context --------------------------------------------
 TMP_EXTRACT="${WORKSPACE}/tmp/extract"

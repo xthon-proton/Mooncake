@@ -7,7 +7,7 @@ mooncake-master
 {{- end -}}
 
 {{- define "mooncake.fullname" -}}
-mooncake-master
+mooncake-store-server
 {{- end -}}
 
 {{- define "mooncake.headlessName" -}}
@@ -15,7 +15,7 @@ mooncake-master-headless
 {{- end -}}
 
 {{- define "mooncake.labels" -}}
-app: {{ include "mooncake.name" . }}
+app: {{ include "mooncake.fullname" . }}
 {{- end -}}
 
 {{- define "mooncake.annotations" -}}
@@ -25,5 +25,5 @@ paas.kubernetes.io/resource-limits: '{"mooncake-store-server":{"docker/ulimit.no
 {{- end -}}
 
 {{- define "mooncake.selectorLabels" -}}
-app: {{ include "mooncake.name" . }}
+app: {{ include "mooncake.fullname" . }}
 {{- end -}}

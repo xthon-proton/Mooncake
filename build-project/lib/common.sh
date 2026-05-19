@@ -97,22 +97,22 @@ check_go_version() {
 # ---- print_dirs ------------------------------------------------------------
 # 打印当前阶段使用的目录布局，便于排障。
 print_dirs() {
-    log_info "=== 构建目录配置 ==="
-    log_info "SRC_DIR:   ${SRC_DIR:-<未设置>}"
-    log_info "BUILD_DIR: ${BUILD_DIR:-<未设置>}"
-    log_info "TMP_DIR:   ${TMP_DIR:-<未设置>}"
-    log_info "DIST_DIR:  ${DIST_DIR:-<未设置>}"
-    log_info "==================="
+	log_info "=== 构建目录配置 ==="
+	log_info "SRC_DIR:   ${SRC_DIR:-<未设置>}"
+	log_info "BUILD_DIR: ${BUILD_DIR:-<未设置>}"
+	log_info "TMP_DIR:   ${TMP_DIR:-<未设置>}"
+	log_info "DIST_DIR:  ${DIST_DIR:-<未设置>}"
+	log_info "==================="
 }
 
 # ---- 派生路径默认值 --------------------------------------------------------
 # WORKSPACE 必须由调用方（CI env / 本地 export）提供；其余路径若未提供则按
 # 约定派生，统一所有脚本的目录布局：
 #     $WORKSPACE/
-#       ├── mooncake_artifact/src/    manifest 拉取根（pre_mooncake.xml 中 path="src/<name>"）
-#       ├── mooncake_artifact/build/  out-of-tree cmake 构建目录根
-#       ├── tmp/                      打包临时目录
-#       └── dist/                     最终制品输出目录
+#       ├── mooncake_artifact/src/        manifest 拉取根（pre_mooncake.xml 中 path="src/<name>"）
+#       ├── mooncake_artifact/build/      out-of-tree cmake 构建目录根
+#       ├── tmp/        打包临时目录
+#       └── dist/       最终制品输出目录
 if [[ -n "${WORKSPACE:-}" ]]; then
     : "${SRC_DIR:=${WORKSPACE}/mooncake_artifact/src}"
     : "${BUILD_DIR:=${WORKSPACE}/mooncake_artifact/build}"
@@ -136,17 +136,23 @@ init_build_image_params() {
 
     case "${cmc_type:-}" in
         ARM)
-            OS_TYPE="EulerOS"; ARCH_STR="Aarch64"; OS_ARCH="euler_aarch64"
+            OS_TYPE="EulerOS"
+            ARCH_STR="Aarch64"
+            OS_ARCH="euler_aarch64"
             DEPENDENCY_IMAGE_NAME="eulerarmlib"
             IMAGE_LABEL="euler_aarch64/eulerarmlib:${labelVersion}"
             ;;
         X86)
-            OS_TYPE="EulerOS"; ARCH_STR="X86"; OS_ARCH="euler_x86"
+            OS_TYPE="EulerOS"
+            ARCH_STR="X86"
+            OS_ARCH="euler_x86"
             DEPENDENCY_IMAGE_NAME="eulerx86lib"
             IMAGE_LABEL="euler_x86/eulerx86lib:${labelVersion}"
             ;;
         SUSE)
-            OS_TYPE="Suse"; ARCH_STR="X86"; OS_ARCH="suse_x86"
+            OS_TYPE="Suse"
+            ARCH_STR="X86"
+            OS_ARCH="suse_x86"
             DEPENDENCY_IMAGE_NAME="sles12sp5lib"
             IMAGE_LABEL="suse_x86/sles12sp5lib:${labelVersion}"
             ;;
