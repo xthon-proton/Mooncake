@@ -15,7 +15,7 @@
 
 set -euo pipefail
 SCRIPT_NAME="1_preflight"
-source "$(dirname "$0")/lib/common.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 # 设置部分参数默认值
 : "${GO_MIN_VERSION:=1.23.7}"

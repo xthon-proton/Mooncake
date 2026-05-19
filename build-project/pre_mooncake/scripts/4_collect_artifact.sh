@@ -13,7 +13,7 @@
 # =============================================================================
 set -euo pipefail
 SCRIPT_NAME="4_collect_artifact"
-source "$(dirname "$0")/lib/common.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 SUDO="sudo"
 $SUDO -v || die "需要 root 权限执行采集.so文件, mooncake_master的操作，请检查 sudo 配置"

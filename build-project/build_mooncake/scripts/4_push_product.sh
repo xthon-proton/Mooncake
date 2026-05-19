@@ -7,8 +7,8 @@ set -euo pipefail
 SCRIPT_NAME="4_push_product"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-source "$(cd "$STAGE_DIR/../pre_mooncake/scripts/lib" && pwd)/common.sh"
-source "$STAGE_DIR/lib/common.sh"
+# 跨阶段唯一公共函数库（含 init_build_image_params）
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 init_build_image_params
 

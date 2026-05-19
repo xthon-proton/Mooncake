@@ -28,6 +28,9 @@ eggs/
 .eggs/
 lib/
 lib64/
+# 上面的 lib/ 是 Python 构建输出通配；显式放行 build-project 下的共享函数库目录
+!build-project/lib/
+!build-project/lib/**
 parts/
 sdist/
 var/

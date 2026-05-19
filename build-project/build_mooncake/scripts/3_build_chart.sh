@@ -15,7 +15,7 @@ set -euo pipefail
 SCRIPT_NAME="3_build_chart"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE_DIR="$(cd "$THIS_DIR/.." && pwd)"
-source "$(cd "$STAGE_DIR/../pre_mooncake/scripts/lib" && pwd)/common.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/common.sh"
 
 # 变量声明
 : "${B_VERSION:=27.0.0}"
