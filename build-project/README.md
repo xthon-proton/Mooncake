@@ -12,24 +12,20 @@ build-project/
 ├── README.md                                ← 本文件
 ├── lib/
 │   └── common.sh                            ← 公共函数库（两阶段共享：日志 / require_env / go 校验 / 默认路径派生）
-├── pre_mooncake/                            ← 阶段一：编译并打包二进制制品
+├── pre_mooncake/                            ← 阶段一：编译并打包二进制制品（含 .so 文件）
 │   ├── manifest/
 │   │   └── pre_mooncake.xml                 ← 工程任务的源码拉取清单
 │   ├── ci/
 │   │   └── pre_mooncake_arm.yml             ← 工程任务定义（PRE/BUILD/POST）
-│   ├── build.sh                             ← 阶段入口（本地穿刺）
+│   ├── build.sh                             ← 阶段入口（制品构建）
 │   └── scripts/
 │       ├── 1_preflight.sh                   ← 环境校验（gcc-12 / go 1.26.1 / yum）
 │       ├── 2_build_deps.sh                  ← 6 个依赖按序编译并装入 /usr/local
 │       ├── 3_build_mooncake.sh              ← cmake + make mooncake_master
 │       ├── 4_collect_artifact.sh            ← collect_libs + 打 tar.gz
 │       └── 5_push_artifact.sh               ← 推制品仓（mock）
-└── build_mooncake/                          ← 阶段二：制 image + chart
-    ├── manifest/
-    │   └── build_mooncake.xml
-    ├── ci/
-    │   └── build_mooncake_arm.yml
-    ├── build.sh
+└── build_mooncake/                          ← 阶段二：制 image + chart（由其他工具调用，并注入变量，如DSPTool）
+    ├── build.sh                             ← 阶段入口（image包、chart包构建）
     ├── docker/
     │   ├── Dockerfile
     │   ├── entrypoint.sh
@@ -44,8 +40,10 @@ build-project/
     │           ├── service.yaml
     │           ├── service-headless.yaml
     │           └── service-account.yaml
+    ├── lib/
+    |   └── save_image_slim.sh               ← 基于基础镜像, 对应用镜像瘦身并保存tar包
     └── scripts/
-        ├── 1_pull_artifact.sh               ← 拉阶段一制品并解压到 docker/build-context
+        ├── 1_pull_artifact.sh               ← 拉取阶段一制品并解压到 docker/build-context
         ├── 2_build_image.sh                 ← docker build → 7z 打包
         ├── 3_build_chart.sh                 ← helm package → 7z 打包
         └── 4_push_product.sh                ← 推 product repo（mock）
